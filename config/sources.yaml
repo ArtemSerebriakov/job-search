@@ -1,0 +1,90 @@
+# Where `jobsearch collect` fetches postings. Verified against the live APIs on 2026-10-23.
+
+# Named companies with a public hiring-platform feed. `company` must match a key in
+# criteria.yaml:named_companies so the worldwide-location exemption applies.
+ats:
+  - {company: Nebius,             platform: greenhouse, slug: nebius}
+  - {company: Toloka,             platform: greenhouse, slug: toloka}
+  - {company: HumanSignal,        platform: greenhouse, slug: humansignal}
+  - {company: JetBrains,          platform: greenhouse, slug: jetbrains}
+  - {company: Coherent Solutions, platform: greenhouse, slug: coherentsolutions}
+  - {company: Flo Health,         platform: greenhouse, slug: flohealth}
+  - {company: Avride,             platform: greenhouse, slug: avride}
+  - {company: ABBYY,              platform: greenhouse, slug: abbyy}
+  - {company: Exadel,             platform: greenhouse, slug: exadelinc}
+  - {company: Higgsfield AI,      platform: ashby,      slug: higgsfieldai}
+  - {company: Recraft,            platform: ashby,      slug: recraft}
+  - {company: Constructor Group,  platform: ashby,      slug: constructor}
+  - {company: ClickHouse,         platform: ashby,      slug: clickhouse}
+  - {company: Salmon,             platform: ashby,      slug: salmon-group}
+  - {company: ZeroAvia,           platform: workable,   slug: zeroavia}
+  - {company: Freedom Holding,    platform: workable,   slug: freedomfinanceeu}
+  - {company: Sumsub,             platform: teamtailor, slug: sumsub}
+  - {company: Personio,           platform: personio,   slug: personio}
+
+# Named companies with custom careers sites (no public feed found): covered by the
+# web-discovery agent instead.
+custom_careers_sites:
+  - Qdrant
+  - EPAM Systems
+  - DataArt
+  - Andersen Lab
+  - Belitsoft
+  - Revolut
+  - Tabby
+  - Wirex
+  - Yango Group
+  - inDrive
+  - Finom
+  - Luxoft
+  - Kaspi.kz
+  - Uzum
+
+# Job-board APIs (non-named employers: the location rule limits these to DE / NL / AE).
+arbeitsagentur:
+  published_within_days: 7
+  max_pages: 3            # per query, 100 results per page
+  queries: [Machine Learning, Data Scientist, KI Engineer, AI Engineer, NLP, Data Science,
+            Deep Learning, Computer Vision, Junior Data, Absolvent Data, Applied Scientist, LLM]
+
+arbeitnow:
+  max_pages: 5            # 100 results per page, newest first
+
+himalayas:
+  max_pages: 3            # per query x country, 20 results per page
+  countries: [Germany, Netherlands, United Arab Emirates]
+  queries: [machine learning, data scientist, AI engineer, NLP, LLM, junior data]
+
+remoteok:
+  enabled: true
+
+# JobsPipe API (key in .env as JOBSPIPE_API_KEY). One credit per returned job; the free plan has
+# a one-off 1,000 credits, so filters run on JobsPipe's side and spending is capped per day.
+# Boards collected for free above are excluded to avoid paying for them twice.
+jobspipe:
+  max_results_per_day: 30
+  searches:
+    - name: DE/NL/AE early-career AI/ML/data
+      max_results: 20
+      filters:
+        job_country_code_or: [DE, NL, AE]
+        posted_at_max_age_days: 3
+        job_title_or: [machine learning, ML engineer, AI engineer, data scientist, NLP, LLM, deep learning,
+                       applied scientist, research scientist, research engineer, computer vision, GenAI,
+                       data science, KI]
+        job_title_not: [senior, lead, principal, staff, head, manager, director, werkstudent, working student,
+                        intern, praktikum, thesis, masterarbeit]
+        job_seniority_or: [entry, associate]
+        include_unlabeled_seniority: true
+        language_or: [en, ru]
+        source_not: [arbeitnow, himalayas, remoteok, indeed]   # free elsewhere (Indeed via its connector)
+    - name: named companies without a public job feed (worldwide)
+      max_results: 10
+      filters:
+        company_name_or: [Qdrant, EPAM Systems, DataArt, Andersen Lab, Belitsoft, Revolut, Tabby, Wirex,
+                          Yango, inDrive, Finom, Luxoft, Kaspi.kz, Uzum]
+        posted_at_max_age_days: 7
+        job_title_or: [machine learning, ML, AI, data scientist, NLP, LLM, data science, research]
+        job_title_not: [senior, lead, principal, staff, head, manager, director, intern]
+        include_unlabeled_seniority: true
+        language_or: [en, ru]

@@ -1,0 +1,71 @@
+# Search criteria. Python reads this; every decision is made in code.
+
+# Employers whose roles are eligible in ANY country / work mode.
+# Keys are canonical names; aliases are matched case-insensitively against the company field.
+named_companies:
+  Personio: []
+  Nebius: [nebius group, nebius ai]
+  Higgsfield AI: [higgsfield]
+  Recraft: [recraft ai]
+  Qdrant: []
+  Toloka: [toloka ai]
+  HumanSignal: [label studio]
+  Constructor Group: [constructor, constructor.io, constructor tech, constructor university]
+  JetBrains: []
+  EPAM Systems: [epam]
+  DataArt: []
+  Exadel: []
+  Coherent Solutions: []
+  Andersen Lab: [andersen software, andersenlab]
+  Belitsoft: []
+  ClickHouse: []
+  Revolut: []
+  Sumsub: [sum and substance]
+  Tabby: []
+  Wirex: []
+  Flo Health: [flo health ltd]
+  Avride: []
+  ZeroAvia: []
+  Yango Group: [yango]
+  inDrive: [indriver]
+  Salmon: []
+  Finom: []
+  Freedom Holding: [freedom24, freedom finance, freedom broker]
+  ABBYY: []
+  Luxoft: []
+  Kaspi.kz: [kaspi]
+  Uzum: []
+
+# Everyone else: only these countries (ISO-3166 alpha-2), in priority order.
+allowed_countries: [DE, NL, AE]
+
+# Added to the weighted score after the LLM sub-scores (points, 0-100 scale).
+location_bonus:
+  munich: 6
+  DE: 4
+  NL: 2
+  AE: 0
+  other: 0
+
+# Seniority: maximum stated minimum years of experience.
+max_min_years: 2
+
+# Weights for the five LLM sub-scores (must sum to 1.0).
+weights:
+  genai_relevance: 0.30
+  skills_match: 0.25
+  seniority_fit: 0.20
+  domain_fit: 0.15
+  growth: 0.10
+
+# Local multilingual embedding model for the pre-filter (fastembed). Upgrade option:
+# sentence-transformers/paraphrase-multilingual-mpnet-base-v2 (1 GB) or intfloat/multilingual-e5-large (2.2 GB).
+embedding_model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+prefilter_top_k: 25
+digest_size: 10
+min_final_score: 55
+
+calibration:
+  min_resolved: 30
+  no_reply_after_days: 45
+  default_reply_rate: 0.08   # assumed per-application reply rate before calibration

@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+
+# Secrets
+.env
+
+# OS
+.DS_Store
+
+# Runtime data
+data/*.db
+data/*.db-*
+data/batches/
+data/models/
+logs/
+
+# Personal data (kept local)
+config/profile.md
+reports/*.md

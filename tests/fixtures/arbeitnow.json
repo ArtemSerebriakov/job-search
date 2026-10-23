@@ -1,0 +1,5 @@
+{"data": [
+  {"slug": "junior-ai", "company_name": "Acme GmbH", "title": "Junior AI Engineer", "description": "<p>LLMs</p>", "remote": false,
+   "url": "https://www.arbeitnow.com/jobs/companies/acme/junior-ai", "location": "Munich", "created_at": 1792764069},
+  {"slug": "sales", "company_name": "B", "title": "Sales Manager", "description": "", "remote": false, "url": "https://www.arbeitnow.com/jobs/b/sales", "location": "Berlin", "created_at": 1}
+], "links": {"next": null}}

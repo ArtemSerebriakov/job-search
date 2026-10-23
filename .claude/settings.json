@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run pytest*)",
+      "Bash(uv run jobsearch *)",
+      "Bash(uv sync*)",
+      "WebSearch",
+      "WebFetch",
+      "Edit(./data/batches/**)",
+      "Edit(./reports/**)"
+    ],
+    "ask": [
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(git remote*)",
+      "Bash(launchctl *)",
+      "Edit(./config/criteria.yaml)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty'); case \"$f\" in */src/job_search/verify/*|*/src/job_search/dedup.py|*/src/job_search/config.py|*/tests/*|*/config/criteria.yaml) cd \"$CLAUDE_PROJECT_DIR\" && out=$(uv run pytest -q 2>&1) || { echo \"$out\" | tail -30 >&2; exit 2; } ;; esac",
+            "timeout": 60,
+            "statusMessage": "Running verification tests"
+          }
+        ]
+      }
+    ]
+  }
+}

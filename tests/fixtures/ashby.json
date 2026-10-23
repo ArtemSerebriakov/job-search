@@ -1,0 +1,7 @@
+{"jobs": [
+  {"id": "db49-1", "title": "AI Engineer", "location": "Almaty, Kazakhstan", "secondaryLocations": [{"location": "Remote"}],
+   "isListed": true, "isRemote": null, "workplaceType": "OnSite", "address": {"postalAddress": {"addressCountry": "Kazakhstan", "addressLocality": "Almaty"}},
+   "jobUrl": "https://jobs.ashbyhq.com/higgsfieldai/db49-1", "publishedAt": "2026-10-21T06:40:24.278+00:00",
+   "descriptionPlain": "Train diffusion models."},
+  {"id": "hidden", "title": "ML Engineer", "location": "Berlin", "isListed": false, "jobUrl": "https://jobs.ashbyhq.com/x/hidden"}
+]}

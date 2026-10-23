@@ -1,0 +1,8 @@
+{"metadata": {"total_results": 3, "next_cursor": "abc"}, "data": [
+  {"id": "jp1", "job_title": "Junior Machine Learning Engineer", "company": "Acme AI", "url": "https://boards.greenhouse.io/acme/jobs/555555",
+   "long_location": "Munich, Bavaria, Germany", "country_code": "DE", "cities": ["Munich"], "remote": false, "status": "active",
+   "description": "Build LLM agents.", "date_posted": "2026-10-22", "sources": [{"provider": "greenhouse"}]},
+  {"id": "jp2", "job_title": "AI Engineer", "company": "Beta", "url": "https://www.linkedin.com/jobs/view/4012345678",
+   "long_location": "Amsterdam, Netherlands", "country_code": "NL", "status": "active", "description": "RAG.",
+   "date_posted": "2026-10-22", "sources": [{"provider": "linkedin"}]}
+]}
