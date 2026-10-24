@@ -6,8 +6,12 @@
   <string>com.job-search.daily</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
-    <string>__PROJECT_DIR__/scripts/daily.sh</string>
+    <!-- Open the runner app (it holds the Desktop-folder permission), wait for it, keep it in the background. -->
+    <string>/usr/bin/open</string>
+    <string>-W</string>
+    <string>-g</string>
+    <string>-a</string>
+    <string>__RUNNER_APP__</string>
   </array>
   <!-- Every day at 08:00 local time. If the Mac is asleep, launchd runs it on wake. -->
   <key>StartCalendarInterval</key>

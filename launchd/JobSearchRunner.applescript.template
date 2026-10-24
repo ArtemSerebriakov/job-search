@@ -1,0 +1,18 @@
+-- JobSearchRunner: started by launchd at 08:00 (via /usr/bin/open).
+-- macOS only lets background jobs read ~/Desktop with permission, and that permission is granted
+-- to an app, not to a bare launchd job. This applet is that app: approve "access files in your
+-- Desktop folder" once and every later run inherits it.
+--
+-- If ~/.job-search-permission-check exists, it only runs a harmless check (no email, no credits)
+-- and deletes the file. Used by `scripts/install-schedule.sh --check`.
+
+on run
+	set projectDir to "__PROJECT_DIR__"
+	set flagFile to (POSIX path of (path to home folder)) & ".job-search-permission-check"
+	set isCheck to (do shell script "test -f " & quoted form of flagFile & " && echo yes || echo no") is "yes"
+	if isCheck then
+		do shell script "rm -f " & quoted form of flagFile & "; export PATH=\"$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\"; cd " & quoted form of projectDir & " && { date; /bin/bash -n scripts/daily.sh && echo 'daily.sh readable'; uv run jobsearch status; command -v claude; } > logs/permission-check.log 2>&1"
+	else
+		do shell script "/bin/bash " & quoted form of (projectDir & "/scripts/daily.sh")
+	end if
+end run

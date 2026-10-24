@@ -26,9 +26,19 @@ All commands accept `--date YYYY-MM-DD` (default: today).
 ## Scheduling
 - `scripts/daily.sh` runs `claude -p "/daily-digest" --model sonnet` with an explicit
   `--allowedTools` list and PATH; logs to `logs/<date>.log`.
-- `launchd/com.job-search.daily.plist.template` runs `scripts/daily.sh` at 08:00 (on wake if asleep).
-- Install / reinstall (only with the user's OK): `scripts/install-schedule.sh` (renders the template
-  with this checkout's path into `~/Library/LaunchAgents/`). Installed on 2026-10-23.
+- At 08:00 (on wake if asleep) launchd runs `open -W -g -a ~/Applications/JobSearchRunner.app`; the
+  app runs `scripts/daily.sh`. Why an app: macOS blocks bare launchd jobs from reading ~/Desktop
+  ("Operation not permitted", exit 126 — the 2026-10-24 run failed this way). The Desktop permission
+  is granted to the app once and inherited by every run.
+- Templates: `launchd/com.job-search.daily.plist.template`, `launchd/JobSearchRunner.applescript.template`.
+- Install / reinstall (only with the user's OK): `scripts/install-schedule.sh` — builds the app if
+  missing, renders the plist, loads it. `--check` also runs a harmless permission check (writes
+  `logs/permission-check.log`; no email, no credits). `--rebuild-runner` rebuilds the app, which makes
+  macOS forget the Desktop permission.
+- Verify the real path without sending email: `touch ~/.job-search-permission-check && launchctl kickstart gui/$(id -u)/com.job-search.daily`,
+  then read `logs/permission-check.log`. Verified this way on 2026-10-24.
+- Never call the Desktop access "verified" from a check started inside an interactive session: it
+  inherits the terminal's/editor's permission (that is how the 2026-10-23 probe passed misleadingly).
 - Status: `launchctl print gui/$(id -u)/com.job-search.daily`
 - Uninstall: `launchctl bootout gui/$(id -u)/com.job-search.daily && rm ~/Library/LaunchAgents/com.job-search.daily.plist`
 - Run now (sends the email, spends JobsPipe credits): `launchctl kickstart gui/$(id -u)/com.job-search.daily`

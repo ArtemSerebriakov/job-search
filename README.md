@@ -67,12 +67,16 @@ uv run jobsearch status
 
 Schedule (08:00 daily; runs on wake if the Mac was asleep):
 ```bash
-scripts/install-schedule.sh                              # install / reinstall for this checkout
+scripts/install-schedule.sh --check                      # install; approve the macOS Desktop-access prompt
 launchctl print gui/$(id -u)/com.job-search.daily        # status
 launchctl kickstart gui/$(id -u)/com.job-search.daily    # run now
 launchctl bootout gui/$(id -u)/com.job-search.daily      # stop
 ```
 Logs: `logs/<date>.log`.
+
+macOS blocks background jobs from reading `~/Desktop`, so launchd opens a tiny app,
+`~/Applications/JobSearchRunner.app` (built by the installer), which runs `scripts/daily.sh`.
+You allow its Desktop access once; every later run inherits it.
 
 ## Tests
 ```bash
@@ -115,8 +119,9 @@ tests/              pytest suite
 - Headless Claude Code can reach the Gmail connector.
 
 **Next**
-1. Confirm the first scheduled run (08:00, 2026-10-24): email arrives, `logs/2026-10-24.log` is clean,
-   no URL from 2026-10-23 repeats.
+1. Confirm the first scheduled run via the runner app (08:00, 2026-10-25): email arrives,
+   `logs/2026-10-25.log` is clean, no URL from 2026-10-23 repeats. (The 2026-10-24 run was blocked
+   by macOS Desktop protection; fixed with the runner app.)
 2. Check the Moss "seasoned engineer" posting with `/fix-leak`.
 3. Put the full CV into `config/profile.md` for sharper ranking and scoring.
 4. After a week: review exclusion audits for false rejections (`/fix-leak`).
