@@ -20,6 +20,7 @@ Core principle: **the model judges, the code decides.**
 ## Skills
 - `/daily-digest` — the full daily pipeline (collect → discover → prepare → score → finalize → email)
 - `/fix-leak` — a wrong posting got through (or a good one was rejected): failing test first, then fix the rule
+- `/check-run` — did a day's 08:00 run work? Runs `uv run jobsearch check-run` and confirms the email in Gmail
 
 ## Agents
 - `web-discovery` — finds postings on boards without an API and writes `discovered.json`

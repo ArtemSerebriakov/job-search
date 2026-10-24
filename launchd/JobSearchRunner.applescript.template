@@ -13,6 +13,12 @@ on run
 	if isCheck then
 		do shell script "rm -f " & quoted form of flagFile & "; export PATH=\"$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\"; cd " & quoted form of projectDir & " && { date; /bin/bash -n scripts/daily.sh && echo 'daily.sh readable'; uv run jobsearch status; command -v claude; } > logs/permission-check.log 2>&1"
 	else
-		do shell script "/bin/bash " & quoted form of (projectDir & "/scripts/daily.sh")
+		try
+			do shell script "/bin/bash " & quoted form of (projectDir & "/scripts/daily.sh")
+		on error errorText number errorNumber
+			-- Covers failures before daily.sh can report anything itself (e.g. Desktop access denied).
+			display notification "The morning run failed (" & errorNumber & "): " & errorText with title "Job digest" sound name "Basso"
+			error errorText number errorNumber
+		end try
 	end if
 end run

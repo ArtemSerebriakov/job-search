@@ -43,6 +43,7 @@ def run_day(day, postings, monkeypatch, scores_for=None):
     monkeypatch.setattr(cli, "get_sources", lambda client: [("fake", lambda: postings)])
     d = day.isoformat()
     assert cli.main(["collect", "--date", d]) == 0
+    assert json.loads((cli.batch_dir(day) / "collect.json").read_text())["fake"]["error"] is None
     assert cli.main(["prepare", "--date", d, "--no-liveness"]) == 0
     batch = cli.batch_dir(day)
     to_score = json.loads((batch / "to_score.json").read_text())

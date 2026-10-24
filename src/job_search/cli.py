@@ -12,8 +12,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from job_search import calibration, rank, report, scoring
-from job_search.config import DATA_DIR, REPORTS_DIR, digest_recipient, load_criteria, load_env, load_profile
+from job_search import calibration, health, rank, report, scoring
+from job_search.config import DATA_DIR, LOGS_DIR, REPORTS_DIR, digest_recipient, load_criteria, load_env, load_profile
 from job_search.db import DB
 from job_search.dedup import collapse_duplicates, urls_in_reports
 from job_search.models import Posting, Verdict
@@ -33,6 +33,10 @@ def data_dir() -> Path:
 
 def reports_dir() -> Path:
     return REPORTS_DIR
+
+
+def logs_dir() -> Path:
+    return LOGS_DIR
 
 
 def get_embedder(model_name: str) -> rank.Embedder:
@@ -56,15 +60,21 @@ def open_db() -> DB:
 def cmd_collect(args) -> int:
     db = open_db()
     total_new = 0
+    summary: dict[str, dict] = {}
     with make_client() as client:
         for name, fetch in get_sources(client):
             result = run_source(name, fetch)
             if result.error:
                 print(f"  {name:32} ERROR {result.error}")
+                summary[name] = {"relevant": 0, "new": 0, "error": result.error}
                 continue
             new = db.upsert_postings(result.postings, args.date)
             total_new += new
+            summary[name] = {"relevant": len(result.postings), "new": new, "error": None}
             print(f"  {name:32} {len(result.postings):4} relevant, {new:4} new")
+    out = batch_dir(args.date)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "collect.json").write_text(json.dumps(summary, indent=2))  # read by check-run
     print(f"collect: {total_new} new postings stored for {args.date}")
     return 0
 
@@ -226,6 +236,13 @@ def cmd_log_outcome(args) -> int:
     return 0
 
 
+def cmd_check_run(args) -> int:
+    paths = health.Paths(data_dir=data_dir(), reports_dir=reports_dir(), logs_dir=logs_dir())
+    checks = health.run_checks(args.date, paths, digest_recipient(), health.launchd_status())
+    print(health.render(args.date, checks))
+    return health.exit_code(checks)
+
+
 def cmd_status(args) -> int:
     criteria = load_criteria()
     db = open_db()
@@ -263,6 +280,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("posting_id")
     p.add_argument("--status", required=True, choices=OUTCOME_STATUSES)
     add("status", cmd_status, "show counts and calibration state")
+    add("check-run", cmd_check_run, "check that a day's scheduled run worked (exit 1 on failure)")
     return parser
 
 

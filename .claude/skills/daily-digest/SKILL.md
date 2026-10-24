@@ -46,6 +46,9 @@ Send with the Gmail connector (`send_message`) to **that printed address only**:
 - `subject`: exactly as printed, e.g. `Job digest <date> — <N> new roles`
 - `htmlBody`: the contents of `email.html`; `body`: the contents of `email.txt` (plain text, no Markdown)
 Copy both files verbatim; do not rewrite, summarise or reformat them.
+After a successful send, write `data/batches/<date>/email_sent.json` with
+`{"message_id": "<id from send_message>", "sent_at": "<ISO time>"}` (read by `jobsearch check-run`).
+Write nothing there if you only created a draft.
 Never send to any other address. If `finalize` prints "recipient not configured", do not send;
 say so in your final message. If the Gmail tool is unavailable, create a draft instead; if
 that is also unavailable, stop and say the report is in `reports/`.

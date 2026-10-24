@@ -3,6 +3,12 @@
 # launchd starts with an almost empty environment, so PATH is set explicitly.
 set -euo pipefail
 
+notify() {  # macOS notification; works without Claude or Gmail
+  /usr/bin/osascript -e "display notification \"$1\" with title \"Job digest\" sound name \"Basso\"" || true
+}
+
+trap 'notify "The morning run could not start: see logs/launchd.err.log"' ERR
+
 export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 PROJECT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT"
@@ -34,5 +40,13 @@ status=0
   echo "=== $(date) daily digest start"
   claude -p "/daily-digest" --model sonnet --allowedTools "${ALLOWED_TOOLS[@]}" || status=$?
   echo "=== $(date) daily digest end (exit $status)"
+  echo "=== $(date) health check"
+  uv run jobsearch check-run || check_status=$?
 } >> "$LOG" 2>&1
+
+if [ "$status" -ne 0 ]; then
+  notify "The morning run failed (exit $status). See logs/$(date +%F).log"
+elif [ "${check_status:-0}" -ne 0 ]; then
+  notify "The morning run finished with problems. Run /check-run or see logs/$(date +%F).log"
+fi
 exit "$status"

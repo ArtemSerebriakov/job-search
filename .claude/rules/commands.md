@@ -22,6 +22,9 @@ All commands accept `--date YYYY-MM-DD` (default: today).
    (exit 3 = invalid/missing scores; re-score those, then `finalize --allow-partial`)
 6. `uv run jobsearch log-outcome <posting-id> --status sent|reply|interview|rejected`
 7. `uv run jobsearch status` — counts, calibration state
+8. `uv run jobsearch check-run [--date D]` — operational health of a day's run (launchd exit, run log
+   errors, failed sources from `collect.json`, discovery files, scoring, report, repeated URLs,
+   recipient, `email_sent.json`); exit 1 on any failure. `daily.sh` runs it after every run.
 
 ## Scheduling
 - `scripts/daily.sh` runs `claude -p "/daily-digest" --model sonnet` with an explicit
@@ -42,7 +45,9 @@ All commands accept `--date YYYY-MM-DD` (default: today).
 - Status: `launchctl print gui/$(id -u)/com.job-search.daily`
 - Uninstall: `launchctl bootout gui/$(id -u)/com.job-search.daily && rm ~/Library/LaunchAgents/com.job-search.daily.plist`
 - Run now (sends the email, spends JobsPipe credits): `launchctl kickstart gui/$(id -u)/com.job-search.daily`
-- Logs: `logs/<date>.log` (the Claude run), `logs/launchd.err.log` (launchd itself).
+- Logs: `logs/<date>.log` (the Claude run + check-run), `logs/launchd.err.log` (launchd itself).
+- Failure alerts are macOS notifications: from `daily.sh` (run failed or check-run failed) and from
+  the runner app (failures before `daily.sh` can run, e.g. Desktop access denied).
 
 ## Claude Code project settings
 - `.claude/settings.json` hook: after Edit/Write on `src/job_search/verify/*`, `dedup.py`,

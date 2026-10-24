@@ -63,7 +63,10 @@ uv run jobsearch prepare                 # filters + ranking → data/batches/<d
 uv run jobsearch finalize                # needs scores.json from the posting-scorer agent
 uv run jobsearch log-outcome <id> --status sent|reply|interview|rejected
 uv run jobsearch status
+uv run jobsearch check-run              # did today's scheduled run work? (exit 1 on failure)
 ```
+In Claude Code, `/check-run` runs the same checks and also confirms the email arrived in Gmail.
+If a morning run fails, a macOS notification tells you.
 
 Schedule (08:00 daily; runs on wake if the Mac was asleep):
 ```bash
@@ -112,7 +115,8 @@ tests/              pytest suite
 ## Status and next steps
 **Works**
 - All sources collect live data (486 relevant postings on the first run, 22 sources, no errors).
-- Verification, ranking, scoring validation, report with HTML/plain-text email, calibration, CLI; 239 tests.
+- Verification, ranking, scoring validation, report with HTML/plain-text email, calibration, CLI,
+  run health checks (`check-run`) with failure notifications; 246 tests.
 - Test email delivered via Gmail (2026-10-23); 08:00 launchd schedule installed.
 - Job connectors (Indeed, JobDataLake, Workable) via the `connector-discovery` agent; JobsPipe API
   source (needs `JOBSPIPE_API_KEY` in `.env`).
