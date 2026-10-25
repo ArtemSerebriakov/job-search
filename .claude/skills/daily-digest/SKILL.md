@@ -18,7 +18,9 @@ Launch both agents in parallel:
 - `connector-discovery` — Indeed, JobDataLake and Jobs by Workable connectors →
   `data/batches/<date>/discovered_connectors.json`
 
-Then run `uv run jobsearch ingest-discovered` (it reads every `discovered*.json`).
+Wait until **both** agents have reported back before continuing — do not end your turn or move on
+while one is still running. Then run `uv run jobsearch ingest-discovered` (it reads every
+`discovered*.json`).
 If an agent fails, continue with what the other one found and mention it in the email.
 
 ## 3. Prepare

@@ -22,9 +22,15 @@ def make_client() -> httpx.Client:
 
 
 def get_with_retry(client: httpx.Client, url: str, retries: int = 2, **kwargs) -> httpx.Response:
-    """GET that retries on 429/5xx with a short backoff; raises for other errors."""
+    """GET that retries on 429/5xx and on dropped connections, with a short backoff."""
     for attempt in range(retries + 1):
-        resp = client.get(url, **kwargs)
+        try:
+            resp = client.get(url, **kwargs)
+        except httpx.TransportError:
+            if attempt == retries:
+                raise
+            time.sleep(2 * (attempt + 1))
+            continue
         if resp.status_code not in (429, 500, 502, 503, 504) or attempt == retries:
             resp.raise_for_status()
             return resp

@@ -15,6 +15,17 @@ cd "$PROJECT"
 mkdir -p logs
 LOG="logs/$(date +%F).log"
 
+# Headless Claude stops background agents 10 minutes after its last turn by default; discovery
+# takes longer (2026-10-25 run was cut off). Allow 45 minutes, not forever, so a hung agent ends.
+export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2700000
+
+# After wake the network (and with it the claude.ai connectors) can take a while to come up
+# (2026-10-25 08:01: sources and connectors failed). Wait up to 5 minutes for it.
+for _ in $(seq 1 30); do
+  /usr/bin/curl -s -o /dev/null -m 5 https://api.anthropic.com && break
+  /bin/sleep 10
+done
+
 ALLOWED_TOOLS=(
   "Bash(uv run jobsearch *)"
   "Read"
@@ -23,6 +34,7 @@ ALLOWED_TOOLS=(
   "WebFetch"
   "Task"
   "Agent"
+  "ToolSearch"
   # job connectors: read-only search and detail tools only
   "mcp__claude_ai_Indeed__search_jobs"
   "mcp__claude_ai_Indeed__get_job_details"

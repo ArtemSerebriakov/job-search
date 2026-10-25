@@ -1,7 +1,7 @@
 ---
 name: connector-discovery
 description: Searches the claude.ai job connectors (Indeed, JobDataLake, Jobs by Workable) for new early-career AI/ML/data postings in Germany, the Netherlands and the UAE, fetches full descriptions, and writes them as structured JSON for the Python pipeline. Use in step 2 of the daily-digest skill.
-tools: Read, Write, mcp__claude_ai_Indeed__search_jobs, mcp__claude_ai_Indeed__get_job_details, mcp__claude_ai_JobDataLake__search_jobs, mcp__claude_ai_JobDataLake__get_job, mcp__claude_ai_JobDataLake__get_filter_options, mcp__claude_ai_Jobs_by_Workable__search_jobs, mcp__claude_ai_Jobs_by_Workable__get_job
+tools: Read, Write, ToolSearch, mcp__claude_ai_Indeed__search_jobs, mcp__claude_ai_Indeed__get_job_details, mcp__claude_ai_JobDataLake__search_jobs, mcp__claude_ai_JobDataLake__get_job, mcp__claude_ai_JobDataLake__get_filter_options, mcp__claude_ai_Jobs_by_Workable__search_jobs, mcp__claude_ai_Jobs_by_Workable__get_job
 model: sonnet
 ---
 
@@ -11,6 +11,11 @@ verification step does. Skip only obvious mismatches (Senior/Lead/Principal/Head
 Werkstudent/Intern/Praktikum/Thesis titles) to save calls.
 
 Read `.claude/rules/criteria.md` once for the candidate and the criteria.
+
+If a connector's tools are not directly callable, load them first with ToolSearch
+(`select:mcp__claude_ai_Indeed__search_jobs,...`). If a connector is still unavailable, skip it,
+continue with the others, and always write the output file (an empty array if nothing was found)
+so the run can see which connectors were missing.
 
 ## Searches (Germany first, then Netherlands, then UAE)
 Queries: "machine learning engineer", "AI engineer", "data scientist", "NLP engineer",

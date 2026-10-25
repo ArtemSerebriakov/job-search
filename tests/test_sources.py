@@ -160,3 +160,20 @@ def test_jobspipe_without_key_is_reported_not_crashing(monkeypatch):
     monkeypatch.delenv("JOBSPIPE_API_KEY", raising=False)
     result = run_source("jobspipe", lambda: jobspipe.fetch(None, [{"filters": {}}], 5))
     assert "JOBSPIPE_API_KEY not set" in result.error
+
+
+def test_dropped_connection_is_retried(monkeypatch):
+    # Live run 2026-10-25 08:01, right after wake: Bundesagentur "Server disconnected" killed the source.
+    from job_search.sources import base
+    monkeypatch.setattr(base.time, "sleep", lambda s: None)
+    calls = []
+
+    def handler(request):
+        calls.append(1)
+        if len(calls) == 1:
+            raise httpx.RemoteProtocolError("Server disconnected without sending a response.")
+        return httpx.Response(200, json={"ok": True})
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as c:
+        assert base.get_with_retry(c, "https://example.com/api").json() == {"ok": True}
+    assert len(calls) == 2
