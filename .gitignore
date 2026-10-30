@@ -23,3 +23,7 @@ logs/
 # Personal data (kept local)
 config/profile.md
 reports/*.md
+
+# Playwright MCP snapshots and trial output
+.playwright-mcp/
+data/browser/

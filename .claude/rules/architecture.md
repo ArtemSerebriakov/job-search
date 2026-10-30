@@ -9,9 +9,12 @@ weighting, threshold and ranking happens in Python.
    (`sources/relevance.py`) → `postings` table (SQLite, `data/jobs.db`). One failing source never
    stops the run. JobsPipe (`sources/jobspipe.py`) is a paid API: one credit per returned job, capped by
    `jobspipe.max_results_per_day`; filters run on JobsPipe's side to avoid paying for rejects.
-2. Claude discovery, two agents in parallel: `web-discovery` (boards without an API, custom careers
+2. Claude discovery, three agents in parallel: `web-discovery` (boards without an API, custom careers
    sites) → `discovered.json`; `connector-discovery` (Indeed, JobDataLake, Workable connectors,
-   read-only tools) → `discovered_connectors.json`; then `ingest-discovered` reads every `discovered*.json`
+   read-only tools) → `discovered_connectors.json`; `careers-browser` (headless isolated Playwright from
+   `config/browser-mcp.json`, extraction script `config/browser_extract.js`, sites from
+   `browser_careers` in `sources.yaml`) → `discovered_browser_*.json`; then `ingest-discovered` reads
+   every `discovered*.json`
 3. `prepare`
    - `dedup.py`: drop URLs already in `seen_urls` or in any earlier
      `reports/job-search_daily-reports_*.md`; drop reposts (same company + normalised title)

@@ -12,16 +12,18 @@ Today's batch folder is `data/batches/<YYYY-MM-DD>/` (local date).
 `uv run jobsearch collect` — fetches the API/ATS sources. Note the counts it prints.
 
 ## 2. Discover (sources only Claude can reach)
-Launch both agents in parallel:
+Launch all three agents in parallel:
 - `web-discovery` — boards without an API and named companies' custom careers sites →
   `data/batches/<date>/discovered.json`
 - `connector-discovery` — Indeed, JobDataLake and Jobs by Workable connectors →
   `data/batches/<date>/discovered_connectors.json`
+- `careers-browser` — named companies' careers sites that need a browser (`browser_careers` in
+  `config/sources.yaml`) → `data/batches/<date>/discovered_browser_*.json`
 
-Wait until **both** agents have reported back before continuing — do not end your turn or move on
+Wait until **all three** agents have reported back before continuing — do not end your turn or move on
 while one is still running. Then run `uv run jobsearch ingest-discovered` (it reads every
 `discovered*.json`).
-If an agent fails, continue with what the other one found and mention it in the email.
+If an agent fails, continue with what the others found and mention it in the email.
 
 ## 3. Prepare
 `uv run jobsearch prepare` — dedup, hard filters, liveness, embedding pre-filter.

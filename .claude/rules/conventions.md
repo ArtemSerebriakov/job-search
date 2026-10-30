@@ -15,4 +15,7 @@
 - Job connectors: agents get read-only search/detail tools only — never profile, résumé,
   application, billing or alert-creating tools (Workable `update_my_profile`/`withdraw_application`,
   Indeed `get_resume`, JobsPipe `upgrade_plan`/`create_signal`).
+- Browser use (careers-browser agent): only configured employer careers pages, headless and isolated
+  (`config/browser-mcp.json`), job boards blocked. Never bypass bot checks or CAPTCHAs — skip the site
+  (Revolut was dropped for this reason on 2026-10-30).
 - Dependencies via `uv add` only, after the user approves them.

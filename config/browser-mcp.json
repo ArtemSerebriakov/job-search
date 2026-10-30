@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "careers-browser": {
+      "command": "npx",
+      "args": [
+        "-y", "@playwright/mcp@0.0.83",
+        "--headless",
+        "--isolated",
+        "--output-dir", "data/browser",
+        "--blocked-origins", "https://www.linkedin.com;https://linkedin.com;https://www.indeed.com;https://de.indeed.com;https://nl.indeed.com;https://ae.indeed.com;https://to.indeed.com;https://www.glassdoor.com;https://www.glassdoor.de;https://www.glassdoor.nl;https://www.xing.com"
+      ]
+    }
+  }
+}

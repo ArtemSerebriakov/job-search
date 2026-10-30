@@ -103,3 +103,14 @@ def test_rerunning_finalize_replaces_the_days_reported_set(env, monkeypatch):
     (batch / "scores.json").write_text(json.dumps(scores))
     cli.main(["finalize", "--date", DAY1.isoformat()])
     assert len(cli.open_db().reported_on(DAY1)) == 1
+
+
+def test_ingest_accepts_browser_output_saved_as_json_string(env, monkeypatch):
+    # Playwright's evaluate(filename=...) can store the returned array as a JSON-encoded string.
+    batch = cli.batch_dir(DAY1)
+    batch.mkdir(parents=True, exist_ok=True)
+    item = {"source": "discovery:browser:Revolut", "url": "https://www.revolut.com/careers/position/applied-ai-engineer-8c49382a/",
+            "title": "Applied AI Engineer", "company": "Revolut", "description": ENGLISH, "source_is_origin": True}
+    (batch / "discovered_browser_revolut.json").write_text(json.dumps(json.dumps([item])))
+    assert cli.main(["ingest-discovered", "--date", DAY1.isoformat()]) == 0
+    assert [p.title for p in cli.open_db().postings_seen_on(DAY1)] == ["Applied AI Engineer"]

@@ -88,6 +88,8 @@ def cmd_ingest_discovered(args) -> int:
     db = open_db()
     for path in paths:
         items = json.loads(path.read_text())
+        if isinstance(items, str):  # Playwright's evaluate(filename=...) may store the array as a JSON string
+            items = json.loads(items)
         valid, skipped = [], 0
         for item in items:
             try:

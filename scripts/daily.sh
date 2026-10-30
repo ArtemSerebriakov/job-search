@@ -43,6 +43,11 @@ ALLOWED_TOOLS=(
   "mcp__claude_ai_JobDataLake__get_filter_options"
   "mcp__claude_ai_Jobs_by_Workable__search_jobs"
   "mcp__claude_ai_Jobs_by_Workable__get_job"
+  # careers-browser: headless isolated browser from config/browser-mcp.json
+  "mcp__careers-browser__browser_navigate"
+  "mcp__careers-browser__browser_wait_for"
+  "mcp__careers-browser__browser_evaluate"
+  "mcp__careers-browser__browser_close"
   "mcp__claude_ai_Gmail__send_message"
   "mcp__claude_ai_Gmail__create_draft"
 )
@@ -50,7 +55,8 @@ ALLOWED_TOOLS=(
 status=0
 {
   echo "=== $(date) daily digest start"
-  claude -p "/daily-digest" --model sonnet --allowedTools "${ALLOWED_TOOLS[@]}" || status=$?
+  claude -p "/daily-digest" --model sonnet --mcp-config config/browser-mcp.json \
+    --allowedTools "${ALLOWED_TOOLS[@]}" || status=$?
   echo "=== $(date) daily digest end (exit $status)"
   echo "=== $(date) health check"
   uv run jobsearch check-run || check_status=$?

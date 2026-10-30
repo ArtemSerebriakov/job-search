@@ -88,3 +88,17 @@ jobspipe:
         job_title_not: [senior, lead, principal, staff, head, manager, director, intern]
         include_unlabeled_seniority: true
         language_or: [en, ru]
+
+# Named companies whose careers sites block plain requests or render jobs with JavaScript.
+# Read by the careers-browser agent (headless, isolated browser; see config/browser-mcp.json).
+# `link_pattern` is a substring of the posting links on the listing page. Verified 2026-10-30.
+browser_careers:
+  - company: EPAM Systems
+    urls:
+      - "https://careers.epam.com/en/jobs/germany?search=machine+learning"
+      - "https://careers.epam.com/en/jobs/germany?search=data+scientist"
+    link_pattern: /vacancy/
+  # Excluded: Revolut — its careers site shows a bot check to headless browsers; we don't bypass bot
+  # protection. Its roles still arrive via the Indeed connector and JobsPipe (LinkedIn).
+  # Not yet verified (listing URL unknown): Qdrant, DataArt, Andersen Lab, Belitsoft, Tabby, Wirex,
+  # Yango Group, inDrive, Finom, Luxoft, Kaspi.kz, Uzum. Add an entry once its URL is checked.

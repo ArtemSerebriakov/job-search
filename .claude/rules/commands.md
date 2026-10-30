@@ -27,8 +27,9 @@ All commands accept `--date YYYY-MM-DD` (default: today).
    recipient, `email_sent.json`); exit 1 on any failure. `daily.sh` runs it after every run.
 
 ## Scheduling
-- `scripts/daily.sh` runs `claude -p "/daily-digest" --model sonnet` with an explicit
-  `--allowedTools` list and PATH; logs to `logs/<date>.log`.
+- `scripts/daily.sh` runs `claude -p "/daily-digest" --model sonnet --mcp-config config/browser-mcp.json`
+  (adds the headless `careers-browser` Playwright server, pinned @playwright/mcp@0.0.83) with an
+  explicit `--allowedTools` list and PATH; logs to `logs/<date>.log`.
 - At 08:00 (on wake if asleep) launchd runs `open -W -g -a ~/Applications/JobSearchRunner.app`; the
   app runs `scripts/daily.sh`. Why an app: macOS blocks bare launchd jobs from reading ~/Desktop
   ("Operation not permitted", exit 126 — the 2026-10-24 run failed this way). The Desktop permission

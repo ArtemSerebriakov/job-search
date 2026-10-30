@@ -103,16 +103,27 @@ def check_sources(day: date, paths: Paths) -> Check:
     return Check("sources", "ok", f"all {len(results)} sources OK, {total} relevant postings")
 
 
+def _count(path: Path) -> int:
+    items = json.loads(path.read_text())
+    return len(json.loads(items) if isinstance(items, str) else items)
+
+
 def check_discovery(day: date, paths: Paths) -> Check:
     batch = paths.batch(day)
     expected = {"discovered.json": "web-discovery", "discovered_connectors.json": "connector-discovery"}
     missing = [agent for name, agent in expected.items() if not (batch / name).exists()]
-    counts = {name: len(json.loads((batch / name).read_text())) for name in expected if (batch / name).exists()}
-    if len(missing) == len(expected):
-        return Check("discovery", "fail", "neither discovery agent wrote its file")
+    counts = {name.removesuffix(".json"): _count(batch / name) for name in expected if (batch / name).exists()}
+    browser_files = sorted(batch.glob("discovered_browser_*.json"))
+    if browser_files:
+        counts["browser"] = sum(_count(f) for f in browser_files)
+    else:
+        missing.append("careers-browser")
+    summary = ", ".join(f"{n}: {c}" for n, c in counts.items())
+    if len(missing) == len(expected) + 1:
+        return Check("discovery", "fail", "no discovery agent wrote its file")
     if missing:
-        return Check("discovery", "warn", f"{', '.join(missing)} wrote nothing; found {sum(counts.values())} elsewhere")
-    return Check("discovery", "ok", ", ".join(f"{n}: {c}" for n, c in counts.items()))
+        return Check("discovery", "warn", f"{', '.join(missing)} wrote nothing; {summary}")
+    return Check("discovery", "ok", summary)
 
 
 def check_scoring(day: date, paths: Paths) -> Check:

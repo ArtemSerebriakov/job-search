@@ -14,7 +14,9 @@ sub-scores as schema-validated JSON; every accept/reject decision, weight and th
    (30+ boards incl. EURES, Bayt, LinkedIn; also covers the 14 named companies with custom careers
    sites) (`config/sources.yaml`).
 2. **Discover** — the `web-discovery` agent searches boards without an API and custom careers
-   sites; the `connector-discovery` agent searches the Indeed, JobDataLake and Workable connectors.
+   sites; the `connector-discovery` agent searches the Indeed, JobDataLake and Workable connectors;
+   the `careers-browser` agent opens named companies' JavaScript-only careers pages in a headless,
+   isolated browser (job boards blocked; bot checks are never bypassed).
 3. **Verify** — hard filters: already reported, direct link, location, Werkstudent/intern,
    seniority (0–2 years), description in English or Russian, no German fluency requirement,
    still open. Same-day duplicates collapsed.
@@ -93,7 +95,9 @@ No test touches the network: sources are tested on recorded payloads in `tests/f
                     skills/ (daily-digest, fix-leak), agents/ (web-discovery, posting-scorer)
 config/
   criteria.yaml     named companies, countries, weights, thresholds, embedding model
-  sources.yaml      company job feeds, board queries
+  sources.yaml      company job feeds, board queries, browser careers sites
+  browser-mcp.json  headless Playwright config for the careers-browser agent
+  browser_extract.js  posting extraction script run in the browser
   profile.example.md  template for your CV (copy to profile.md, git-ignored)
 src/job_search/
   cli.py            jobsearch command
@@ -116,7 +120,8 @@ tests/              pytest suite
 **Works**
 - All sources collect live data (486 relevant postings on the first run, 22 sources, no errors).
 - Verification, ranking, scoring validation, report with HTML/plain-text email, calibration, CLI,
-  run health checks (`check-run`) with failure notifications; 246 tests.
+  run health checks (`check-run`) with failure notifications; 251 tests.
+- Browser discovery for named companies' careers sites (EPAM so far; Revolut excluded: bot check).
 - Test email delivered via Gmail (2026-10-23); 08:00 launchd schedule installed.
 - Job connectors (Indeed, JobDataLake, Workable) via the `connector-discovery` agent; JobsPipe API
   source (needs `JOBSPIPE_API_KEY` in `.env`).

@@ -25,6 +25,7 @@ Core principle: **the model judges, the code decides.**
 ## Agents
 - `web-discovery` — finds postings on boards without an API and writes `discovered.json`
 - `connector-discovery` — searches the Indeed, JobDataLake and Workable connectors (read-only tools) and writes `discovered_connectors.json`
+- `careers-browser` — headless, isolated browser for named companies' careers sites listed under `browser_careers` in `config/sources.yaml`; writes `discovered_browser_*.json`
 - `posting-scorer` — five sub-scores plus extracted facts as JSON; never decides eligibility
 
 ## Settings (`settings.json`)

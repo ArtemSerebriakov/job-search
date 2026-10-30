@@ -18,6 +18,7 @@ def setup_day(tmp_path, *, log="=== start\n=== daily digest end (exit 0)\n", col
     if discovered:
         (batch / "discovered.json").write_text("[]")
         (batch / "discovered_connectors.json").write_text('[{"url": "u"}]')
+        (batch / "discovered_browser_revolut.json").write_text('[{"url": "r"}, {"url": "s"}]')
     (batch / "to_score.json").write_text(json.dumps([{"posting_id": "a"}]))
     (batch / "prepare.json").write_text("{}")
     if scores:
@@ -89,3 +90,17 @@ def test_running_job_is_ok(tmp_path):
     s = statuses(health.run_checks(DAY, setup_day(tmp_path), recipient="x@y.z",
                                    launchd_output="state = running\nruns = 4\nlast exit code = 0\n"))
     assert s["launchd"] == "ok"
+
+
+def test_missing_browser_discovery_only_warns(tmp_path):
+    paths = setup_day(tmp_path)
+    (paths.batch(DAY) / "discovered_browser_revolut.json").unlink()
+    checks = health.run_checks(DAY, paths, recipient="x@y.z", launchd_output=LAUNCHD_OK)
+    discovery = next(c for c in checks if c.name == "discovery")
+    assert discovery.status == "warn" and "careers-browser" in discovery.detail
+
+
+def test_browser_counts_are_reported(tmp_path):
+    checks = health.run_checks(DAY, setup_day(tmp_path), recipient="x@y.z", launchd_output=LAUNCHD_OK)
+    discovery = next(c for c in checks if c.name == "discovery")
+    assert discovery.status == "ok" and "browser: 2" in discovery.detail
