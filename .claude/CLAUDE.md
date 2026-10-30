@@ -21,6 +21,7 @@ Core principle: **the model judges, the code decides.**
 - `/daily-digest` — the full daily pipeline (collect → discover → prepare → score → finalize → email)
 - `/fix-leak` — a wrong posting got through (or a good one was rejected): failing test first, then fix the rule
 - `/check-run` — did a day's 08:00 run work? Runs `uv run jobsearch check-run` and confirms the email in Gmail
+- `/commit-msg` — commit the staged changes: updates and stages README/.claude docs to match, then commits as `type(scope): subject` + bullets (no attribution trailer)
 
 ## Agents
 - `web-discovery` — finds postings on boards without an API and writes `discovered.json`

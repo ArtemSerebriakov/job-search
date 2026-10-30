@@ -13,8 +13,8 @@ All commands accept `--date YYYY-MM-DD` (default: today).
 
 ## Pipeline (normally driven by the `daily-digest` skill)
 1. `uv run jobsearch collect` — fetch API/ATS sources into SQLite
-2. (Claude web discovery writes `data/batches/<date>/discovered.json`)
-   `uv run jobsearch ingest-discovered`
+2. (the three discovery agents write `data/batches/<date>/discovered*.json`)
+   `uv run jobsearch ingest-discovered` — reads all of them (`--file` for a single file)
 3. `uv run jobsearch prepare` — dedup → verify → liveness → embedding rank → `to_score.json`
    (`--dry-run` prints the exclusion audit without writing; `--no-liveness` skips HTTP checks)
 4. (Claude writes `data/batches/<date>/scores.json`)

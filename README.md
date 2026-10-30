@@ -11,15 +11,15 @@ sub-scores as schema-validated JSON; every accept/reject decision, weight and th
 ## How it works
 1. **Collect** — public job feeds of 21 named companies (Greenhouse, Ashby, Workable, Teamtailor,
    Personio, Lever, Pinpoint), Bundesagentur für Arbeit, Arbeitnow, Himalayas, RemoteOK, and the JobsPipe API
-   (30+ boards incl. EURES, Bayt, LinkedIn; also covers the 14 named companies with custom careers
+   (30+ boards incl. EURES, Bayt, LinkedIn; also covers the 11 named companies with custom careers
    sites) (`config/sources.yaml`).
 2. **Discover** — the `web-discovery` agent searches boards without an API and custom careers
    sites; the `connector-discovery` agent searches the Indeed, JobDataLake and Workable connectors;
    the `careers-browser` agent opens named companies' JavaScript-only careers pages in a headless,
    isolated browser (job boards blocked; bot checks are never bypassed).
 3. **Verify** — hard filters: already reported, direct link, location, Werkstudent/intern,
-   seniority (0–2 years), description in English or Russian, no German fluency requirement,
-   still open. Same-day duplicates collapsed.
+   seniority (0–2 years), description in English or Russian, no German fluency requirement
+   (intermediate German is flagged), still open. Same-day duplicates collapsed.
 4. **Rank** — similarity of the title and the best-matching description window to
    `config/profile.md`; top 25 go to Claude.
 5. **Score** — the `posting-scorer` agent returns 5 sub-scores plus extracted facts with quotes;
@@ -92,7 +92,8 @@ No test touches the network: sources are tested on recorded payloads in `tests/f
 ## Project structure
 ```
 .claude/            CLAUDE.md, rules/, settings.json (permissions + test hook),
-                    skills/ (daily-digest, fix-leak), agents/ (web-discovery, posting-scorer)
+                    skills/ (daily-digest, fix-leak, check-run, commit-msg),
+                    agents/ (web-discovery, connector-discovery, careers-browser, posting-scorer)
 config/
   criteria.yaml     named companies, countries, weights, thresholds, embedding model
   sources.yaml      company job feeds, board queries, browser careers sites
@@ -109,9 +110,10 @@ src/job_search/
   scoring.py        score validation, fact cross-check, weighting
   calibration.py    reply-probability calibration with censoring
   report.py         markdown digest
+  health.py         check-run: health of a day's scheduled run
   db.py, models.py, config.py
 scripts/            daily.sh (headless run), install-schedule.sh
-launchd/            the 08:00 schedule (template)
+launchd/            the 08:00 schedule and the runner app (templates)
 reports/            daily reports (local, git-ignored: they are the dedup history)
 data/               SQLite DB, daily batches, model cache (git-ignored)
 tests/              pytest suite
@@ -121,18 +123,19 @@ tests/              pytest suite
 **Works**
 - All sources collect live data (486 relevant postings on the first run, 22 sources, no errors).
 - Verification, ranking, scoring validation, report with HTML/plain-text email, calibration, CLI,
-  run health checks (`check-run`) with failure notifications; 251 tests.
+  run health checks (`check-run`) with failure notifications; 268 tests.
+- Hiring-platform feeds for 21 named companies, including Lever (Finom) and Pinpoint (Tabby, inDrive).
 - Browser discovery for named companies' careers sites: EPAM, DataArt, Andersen, Belitsoft, Luxoft
   (Revolut, Qdrant, Wirex excluded: bot checks; Kaspi, Yango, Uzum: no reachable listing).
-- Test email delivered via Gmail (2026-10-23); 08:00 launchd schedule installed.
+- Scheduled 08:00 runs through the runner app work end to end: digests emailed on 2026-10-25, -26,
+  -27, -29 and -30 (2026-10-30: 6 postings, no repeated URLs; JobsPipe timed out once).
 - Job connectors (Indeed, JobDataLake, Workable) via the `connector-discovery` agent; JobsPipe API
   source (needs `JOBSPIPE_API_KEY` in `.env`).
 - Headless Claude Code can reach the Gmail connector.
 
 **Next**
-1. Confirm the first scheduled run via the runner app (08:00, 2026-10-25): email arrives,
-   `logs/2026-10-25.log` is clean, no URL from 2026-10-23 repeats. (The 2026-10-24 run was blocked
-   by macOS Desktop protection; fixed with the runner app.)
+1. Find out why 2026-10-28 has no run (no log; `check-run --date 2026-10-28`): probably the Mac
+   was off all morning.
 2. Check the Moss "seasoned engineer" posting with `/fix-leak`.
 3. Put the full CV into `config/profile.md` for sharper ranking and scoring.
-4. After a week: review exclusion audits for false rejections (`/fix-leak`).
+4. Review exclusion audits from the first week for false rejections (`/fix-leak`).
