@@ -126,10 +126,51 @@ def personio(client: httpx.Client, company: str, slug: str) -> list[Posting]:
     return postings
 
 
+def lever(client: httpx.Client, company: str, slug: str, region: str = "global") -> list[Posting]:
+    host = "api.eu.lever.co" if region == "eu" else "api.lever.co"
+    jobs = get_with_retry(client, f"https://{host}/v0/postings/{slug}", params={"mode": "json"}).json()
+    postings = []
+    for job in jobs:
+        if not is_relevant_title(job.get("text", "")):
+            continue
+        cats = job.get("categories") or {}
+        locations = cats.get("allLocations") or [cats.get("location") or ""]
+        lists = [f"{lst.get('text', '')}\n{html_to_text(lst.get('content'))}" for lst in job.get("lists") or []]
+        description = "\n".join([job.get("descriptionPlain") or "", *lists, job.get("additionalPlain") or ""])
+        location = "; ".join(loc for loc in locations if loc)
+        postings.append(Posting(
+            source="lever", url=job["hostedUrl"], title=job["text"], company=company, location=location,
+            remote=job.get("workplaceType") == "remote" or "remote" in location.lower(),
+            description=description.strip(), posted_at=parse_date(job.get("createdAt")),
+            source_is_origin=True, ats="lever", ats_job_id=job["id"],
+        ))
+    return postings
+
+
+def pinpoint(client: httpx.Client, company: str, slug: str) -> list[Posting]:
+    data = get_with_retry(client, f"https://{slug}.pinpointhq.com/postings.json").json()
+    postings = []
+    for job in data.get("data", []):
+        if not is_relevant_title(job.get("title", "")):
+            continue
+        loc = job.get("location") or {}
+        location = ", ".join(x for x in (loc.get("city"), loc.get("name")) if x)
+        sections = ("description", "key_responsibilities", "skills_knowledge_expertise", "benefits")
+        description = "\n".join(html_to_text(job.get(k)) for k in sections if job.get(k))
+        postings.append(Posting(
+            source="pinpoint", url=job["url"], title=job["title"].strip(), company=company, location=location,
+            remote=job.get("workplace_type") == "remote", description=description,
+            source_is_origin=True, ats="pinpoint", ats_job_id=str(job["id"]),
+        ))
+    return postings
+
+
 PLATFORMS = {
     "greenhouse": greenhouse,
     "ashby": ashby,
     "workable": workable,
     "teamtailor": teamtailor,
     "personio": personio,
+    "lever": lever,
+    "pinpoint": pinpoint,
 }

@@ -25,7 +25,8 @@ available (an interactive session), use the `playwright` tools. If neither exist
      the tool saves them; you don't need to copy them.
 3. `browser_close` at the end.
 
-Never edit the extraction script's logic, never visit sites other than the configured URLs and
+The script waits for late-rendering lists, keeps paragraph breaks (the filters split sentences on
+them) and renders JavaScript-only posting pages in a hidden same-site frame. Never edit its logic, never visit sites other than the configured URLs and
 the posting pages the script fetches, never fill in forms, log in, accept cookies beyond what
 the page needs to render, or apply to anything.
 

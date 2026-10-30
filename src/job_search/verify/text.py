@@ -7,8 +7,13 @@ import re
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?;])\s+|\n+|\s+[•·▪◦]\s*|^\s*[-*]\s+", re.MULTILINE)
 
 
+# Abbreviations whose periods are not sentence ends ("Experience with LLMs (e.g. GPT-4) for 3+ years").
+_ABBREVIATIONS = re.compile(r"\b(e\.g|i\.e|z\.\s?B|u\.\s?a|d\.\s?h|bzw|etc|incl|approx|ca|vs|min|max|resp)\.", re.IGNORECASE)
+
+
 def sentences(text: str) -> list[str]:
-    """Split posting text into sentences / bullet items."""
+    """Split posting text into sentences / bullet items (abbreviation periods removed first)."""
+    text = _ABBREVIATIONS.sub(lambda m: m.group(1).replace(".", "").replace(" ", ""), text)
     return [s.strip() for s in _SENTENCE_SPLIT.split(text) if s and s.strip()]
 
 

@@ -21,6 +21,9 @@ ats:
   - {company: Freedom Holding,    platform: workable,   slug: freedomfinanceeu}
   - {company: Sumsub,             platform: teamtailor, slug: sumsub}
   - {company: Personio,           platform: personio,   slug: personio}
+  - {company: Finom,              platform: lever,      slug: pnlfin, region: eu}
+  - {company: Tabby,              platform: pinpoint,   slug: tabby}
+  - {company: inDrive,            platform: pinpoint,   slug: indrive}
 
 # Named companies with custom careers sites (no public feed found): covered by the
 # web-discovery agent instead.
@@ -31,11 +34,8 @@ custom_careers_sites:
   - Andersen Lab
   - Belitsoft
   - Revolut
-  - Tabby
   - Wirex
   - Yango Group
-  - inDrive
-  - Finom
   - Luxoft
   - Kaspi.kz
   - Uzum
@@ -81,8 +81,8 @@ jobspipe:
     - name: named companies without a public job feed (worldwide)
       max_results: 10
       filters:
-        company_name_or: [Qdrant, EPAM Systems, DataArt, Andersen Lab, Belitsoft, Revolut, Tabby, Wirex,
-                          Yango, inDrive, Finom, Luxoft, Kaspi.kz, Uzum]
+        company_name_or: [Qdrant, EPAM Systems, DataArt, Andersen Lab, Belitsoft, Revolut, Wirex,
+                          Yango, Luxoft, Kaspi.kz, Uzum]
         posted_at_max_age_days: 7
         job_title_or: [machine learning, ML, AI, data scientist, NLP, LLM, data science, research]
         job_title_not: [senior, lead, principal, staff, head, manager, director, intern]
@@ -98,7 +98,26 @@ browser_careers:
       - "https://careers.epam.com/en/jobs/germany?search=machine+learning"
       - "https://careers.epam.com/en/jobs/germany?search=data+scientist"
     link_pattern: /vacancy/
+  - company: DataArt
+    urls:
+      - "https://team.dataart.com/vacancies?categories=5885&categories=4667"   # AI + Data & Analytics
+    link_pattern: /vacancies/
+  - company: Andersen Lab
+    urls:
+      - "https://people-andersenlab.com/vacancies"
+    link_pattern: /vacancy/
+  - company: Belitsoft
+    urls:
+      - "https://belitsoft.com/careers"
+    link_pattern: /careers/
+  - company: Luxoft
+    urls:
+      - "https://career.luxoft.com/jobs?keyword=machine%20learning"
+      - "https://career.luxoft.com/jobs?keyword=data%20scientist"
+    link_pattern: /jobs/
   # Excluded: Revolut — its careers site shows a bot check to headless browsers; we don't bypass bot
   # protection. Its roles still arrive via the Indeed connector and JobsPipe (LinkedIn).
-  # Not yet verified (listing URL unknown): Qdrant, DataArt, Andersen Lab, Belitsoft, Tabby, Wirex,
-  # Yango Group, inDrive, Finom, Luxoft, Kaspi.kz, Uzum. Add an entry once its URL is checked.
+  # Tabby, inDrive (Pinpoint) and Finom (Lever) are collected by Python from their public feeds (ats above).
+  # Checked 2026-10-30 and left to JobsPipe's company search: Qdrant (JOIN) and Wirex show bot checks;
+  # Kaspi.kz careers site unreachable; Yango and Uzum have no careers listing at the URLs found
+  # (yangogroup.com is a parked domain; uzum.uz/careers redirects to the marketplace).

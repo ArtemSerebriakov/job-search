@@ -177,3 +177,19 @@ def test_dropped_connection_is_retried(monkeypatch):
     with httpx.Client(transport=httpx.MockTransport(handler)) as c:
         assert base.get_with_retry(c, "https://example.com/api").json() == {"ok": True}
     assert len(calls) == 2
+
+
+def test_lever_eu_parses_lists_locations_and_filters_titles():
+    with client_for({"api.eu.lever.co": "lever.json"}) as c:
+        [p] = ats.lever(c, "Finom", "pnlfin", region="eu")
+    assert p.title == "Junior Machine Learning Engineer" and p.company == "Finom" and p.source_is_origin
+    assert p.location == "Amsterdam; Berlin" and p.ats == "lever" and p.ats_job_id.startswith("a1b2")
+    assert "MSc in CS" in p.description and "Hybrid work." in p.description
+
+
+def test_pinpoint_parses_sections_and_location():
+    with client_for({"pinpointhq.com/postings.json": "pinpoint.json"}) as c:
+        [p] = ats.pinpoint(c, "Tabby", "tabby")
+    assert p.title == "Data Scientist, Risk" and p.location == "Dubai, United Arab Emirates"
+    assert "Build risk models" in p.description and "1+ year of Python" in p.description
+    assert p.ats == "pinpoint" and p.ats_job_id == "196900" and p.source_is_origin

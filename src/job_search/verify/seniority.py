@@ -52,7 +52,7 @@ _PATTERN_NUM_FIRST = re.compile(
 )
 # "experience of 3+ years", "Berufserfahrung von mindestens 3 Jahren", "erste Berufserfahrung (1-2 Jahre)"
 _PATTERN_EXP_FIRST = re.compile(
-    rf"{_EXPERIENCE}[^.;\n]{{0,40}}?(?:of|von|from|\()?\s*(?:at least|minimum(?: of)?|mindestens|over|more than|mehr als)?\s*"
+    rf"{_EXPERIENCE}[^.;\n]{{0,60}}?(?:of|von|from|\()?\s*(?:at least|minimum(?: of)?|mindestens|over|more than|mehr als)?\s*"
     rf"{_NUM}\s*(?:\+|plus)?\s*(?:(?:-|–|to|bis)\s*{_NUM}\s*\+?\s*)?{_YEARS}\b",
     re.IGNORECASE,
 )

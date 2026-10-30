@@ -9,8 +9,8 @@ Principle: **the model judges, the code decides.** Claude only discovers posting
 sub-scores as schema-validated JSON; every accept/reject decision, weight and threshold is Python.
 
 ## How it works
-1. **Collect** — public job feeds of 18 named companies (Greenhouse, Ashby, Workable, Teamtailor,
-   Personio), Bundesagentur für Arbeit, Arbeitnow, Himalayas, RemoteOK, and the JobsPipe API
+1. **Collect** — public job feeds of 21 named companies (Greenhouse, Ashby, Workable, Teamtailor,
+   Personio, Lever, Pinpoint), Bundesagentur für Arbeit, Arbeitnow, Himalayas, RemoteOK, and the JobsPipe API
    (30+ boards incl. EURES, Bayt, LinkedIn; also covers the 14 named companies with custom careers
    sites) (`config/sources.yaml`).
 2. **Discover** — the `web-discovery` agent searches boards without an API and custom careers
@@ -101,7 +101,8 @@ config/
   profile.example.md  template for your CV (copy to profile.md, git-ignored)
 src/job_search/
   cli.py            jobsearch command
-  sources/          job feeds (ats.py), job boards (boards.py), title pre-filter, registry
+  sources/          job feeds (ats.py: Greenhouse, Ashby, Workable, Teamtailor, Personio, Lever,
+                    Pinpoint), job boards (boards.py), JobsPipe, title pre-filter, registry
   verify/           hard filters + pipeline
   dedup.py          URL normalisation, report history, repost and same-day duplicates
   rank.py           embedding pre-filter
@@ -121,7 +122,8 @@ tests/              pytest suite
 - All sources collect live data (486 relevant postings on the first run, 22 sources, no errors).
 - Verification, ranking, scoring validation, report with HTML/plain-text email, calibration, CLI,
   run health checks (`check-run`) with failure notifications; 251 tests.
-- Browser discovery for named companies' careers sites (EPAM so far; Revolut excluded: bot check).
+- Browser discovery for named companies' careers sites: EPAM, DataArt, Andersen, Belitsoft, Luxoft
+  (Revolut, Qdrant, Wirex excluded: bot checks; Kaspi, Yango, Uzum: no reachable listing).
 - Test email delivered via Gmail (2026-10-23); 08:00 launchd schedule installed.
 - Job connectors (Indeed, JobDataLake, Workable) via the `connector-discovery` agent; JobsPipe API
   source (needs `JOBSPIPE_API_KEY` in `.env`).

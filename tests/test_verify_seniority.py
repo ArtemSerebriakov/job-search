@@ -44,6 +44,11 @@ def test_senior_titles_fail(posting, title):
     ("Experience of 5+ years in a similar role.", 5),
     ("Master's degree and 1 year of experience, or Bachelor's degree and 3 years of experience.", 1),
     ("0-2 years of experience in machine learning.", 0),
+    # Andersen "AI Developer (Germany)", 2026-10-30: abbreviation periods and a long gap.
+    ("Experience with LLMs (e.g. GPT-4, Mistral, LLaMA) for 3+ years.", 3),
+    ("Experience with cloud platforms, i.e. Azure or AWS, for at least 4 years.", 4),
+    ("Berufserfahrung mit ML-Systemen, z.B. Empfehlungssysteme, von mindestens 3 Jahren.", 3),
+    ("Ca. 3 Jahre Berufserfahrung im Bereich Data Science.", 3),
 ])
 def test_required_years(body, expected):
     years, _ = required_years(body)
@@ -56,6 +61,7 @@ def test_required_years(body, expected):
     "5+ years of experience with Kubernetes is a plus.",
     "Experience with LLMs, Python and SQL.",
     "Wir sind seit 20 Jahren am Markt.",
+    "Experience with many tools (e.g. Docker, Kubernetes, Terraform, Airflow and dbt), which we have used for 10 years.",
     "Entwicklung einer mehrjährigen Roadmap für KI.",  # live run 2026-10-23: not an experience requirement
 ])
 def test_no_requirement_found(body):

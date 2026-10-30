@@ -22,7 +22,9 @@ def build_sources(client: httpx.Client, config: dict) -> list[tuple[str, Callabl
     sources: list[tuple[str, Callable[[], list[Posting]]]] = []
     for entry in config.get("ats", []):
         fetch = ats.PLATFORMS[entry["platform"]]
-        sources.append((f"{entry['platform']}:{entry['slug']}", partial(fetch, client, entry["company"], entry["slug"])))
+        extra = {"region": entry["region"]} if "region" in entry else {}
+        sources.append((f"{entry['platform']}:{entry['slug']}",
+                        partial(fetch, client, entry["company"], entry["slug"], **extra)))
     if ba := config.get("arbeitsagentur"):
         sources.append(("arbeitsagentur", partial(boards.arbeitsagentur, client, ba["queries"],
                                                   ba["published_within_days"], ba["max_pages"])))

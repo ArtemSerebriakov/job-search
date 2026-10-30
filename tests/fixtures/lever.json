@@ -1,0 +1,11 @@
+[
+  {"id": "a1b2c3d4-0000-4000-8000-000000000001", "text": "Junior Machine Learning Engineer",
+   "hostedUrl": "https://jobs.eu.lever.co/pnlfin/a1b2c3d4-0000-4000-8000-000000000001",
+   "categories": {"location": "Amsterdam", "allLocations": ["Amsterdam", "Berlin"], "commitment": "Full-time", "team": "Data"},
+   "workplaceType": "hybrid", "createdAt": 1792700000000,
+   "descriptionPlain": "Build credit models with Python.",
+   "lists": [{"text": "What you bring", "content": "<li>MSc in CS</li><li>English</li>"}],
+   "additionalPlain": "Hybrid work."},
+  {"id": "z", "text": "Art Director, Brand & Marketing Design", "hostedUrl": "https://jobs.eu.lever.co/pnlfin/z",
+   "categories": {"location": "Remote"}, "descriptionPlain": ""}
+]
