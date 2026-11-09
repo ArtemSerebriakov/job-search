@@ -1,5 +1,7 @@
 # Conventions
 
+- Commit scopes (used by the user-level `/commit-msg` skill): `verify`, `sources`, `dedup`, `rank`,
+  `scoring`, `report`, `cli`, `health`, `config`, `schedule`, `skills`, `agents`.
 - Python 3.12, package `src/job_search`, CLI entry point `jobsearch`.
 - Type hints everywhere; pydantic models in `models.py`; config is YAML in `config/`.
 - Rules in `verify/` are pure functions with no I/O, except `liveness.py` (HTTP via httpx,

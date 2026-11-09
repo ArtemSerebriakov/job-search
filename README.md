@@ -92,7 +92,7 @@ No test touches the network: sources are tested on recorded payloads in `tests/f
 ## Project structure
 ```
 .claude/            CLAUDE.md, rules/, settings.json (permissions + test hook),
-                    skills/ (daily-digest, fix-leak, check-run, commit-msg),
+                    skills/ (daily-digest, fix-leak, check-run),
                     agents/ (web-discovery, connector-discovery, careers-browser, posting-scorer)
 config/
   criteria.yaml     named companies, countries, weights, thresholds, embedding model
