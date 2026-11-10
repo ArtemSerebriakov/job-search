@@ -28,6 +28,8 @@ Core principle: **the model judges, the code decides.**
 - `connector-discovery` — searches the Indeed, JobDataLake and Workable connectors (read-only tools) and writes `discovered_connectors.json`
 - `careers-browser` — headless, isolated browser for named companies' careers sites listed under `browser_careers` in `config/sources.yaml`; writes `discovered_browser_*.json`
 - `posting-scorer` — five sub-scores plus extracted facts as JSON; never decides eligibility
+- User-level (`~/.claude/agents/`): `code-reviewer`, `qa`, `research` — used by the review → QA → fix
+  loop described in `~/.claude/CLAUDE.md`; their reports go to the git-ignored `.tmp/`
 
 ## Settings (`settings.json`)
 - Allowed: `uv run pytest`, `uv run jobsearch`, `uv sync`, WebSearch/WebFetch, and writes to `data/batches/` and `reports/`.

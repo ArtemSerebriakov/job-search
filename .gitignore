@@ -24,6 +24,9 @@ logs/
 config/profile.md
 reports/*.md
 
+# Subagent reports and scratch tests (code-reviewer, qa, research)
+.tmp/
+
 # Playwright MCP snapshots and trial output
 .playwright-mcp/
 data/browser/
