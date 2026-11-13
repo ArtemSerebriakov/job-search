@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install (or reinstall) the 08:00 schedule for this checkout.
+# Install (or reinstall) the daily schedule (08:00 + catch-ups at 11/14/17) for this checkout.
 #
 #   scripts/install-schedule.sh            build the runner app if missing, install the launchd job
 #   scripts/install-schedule.sh --check    also run a harmless permission check now (approve the
@@ -40,7 +40,7 @@ sed -e "s#__PROJECT_DIR__#$PROJECT#g" -e "s#__RUNNER_APP__#$RUNNER#g" \
 plutil -lint "$TARGET" >/dev/null
 launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$TARGET"
-echo "Installed $LABEL (daily 08:00) -> $TARGET"
+echo "Installed $LABEL (daily 08:00, catch-ups 11:00/14:00/17:00) -> $TARGET"
 
 if $CHECK; then
   touch "$HOME/.job-search-permission-check"

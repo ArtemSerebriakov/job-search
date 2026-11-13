@@ -38,7 +38,10 @@ _REGIONS_COVERING = re.compile(
 )
 # Places clearly outside DE/NL/AE: a match here is a confident FAIL; an unrecognised place only FLAGs.
 _FOREIGN = re.compile(
-    r"\b(united kingdom|uk|england|london|manchester|edinburgh|united states|usa|us|new york|san francisco|"
+    # UK: no "reading"/"bath" — they are ordinary English words
+    r"\b(united kingdom|uk|great britain|england|scotland|wales|northern ireland|london|manchester|edinburgh|"
+    r"bristol|cambridge|oxford|glasgow|belfast|birmingham|leeds|cardiff|liverpool|sheffield|nottingham|"
+    r"newcastle|brighton|southampton|milton keynes|united states|usa|us|new york|san francisco|"
     r"seattle|boston|austin|canada|toronto|vancouver|france|paris|spain|madrid|barcelona|portugal|lisbon|"
     r"poland|warsaw|krakow|kraków|wroclaw|czech|prague|austria|vienna|wien|switzerland|zurich|zürich|geneva|"
     r"basel|bern|lausanne|lugano|zug|belgium|brussels|ireland|dublin|italy|milan|rome|sweden|stockholm|denmark|copenhagen|norway|oslo|"

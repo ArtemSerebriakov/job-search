@@ -1,6 +1,8 @@
 import json
 from datetime import date
 
+import pytest
+
 from job_search import health
 
 DAY = date(2026, 10, 25)
@@ -104,3 +106,46 @@ def test_browser_counts_are_reported(tmp_path):
     checks = health.run_checks(DAY, setup_day(tmp_path), recipient="x@y.z", launchd_output=LAUNCHD_OK)
     discovery = next(c for c in checks if c.name == "discovery")
     assert discovery.status == "ok" and "browser: 2" in discovery.detail
+
+
+# daily.sh appends every attempt of a day (08:00 + catch-ups) to one log; only the last one counts.
+_START = "=== Fri Nov 13 08:00:01 CET 2026 daily digest start\n"
+_FAILED = (_START + "API Error: Can't reach the API server (ENOTFOUND)\n"
+           "=== Fri Nov 13 08:42:28 CET 2026 daily digest end (exit 1)\n")
+_OK = _START.replace("08:00", "11:00") + "=== Fri Nov 13 11:20:46 CET 2026 daily digest end (exit 0)\n"
+_SKIP = "=== Fri Nov 13 14:05:00 CET 2026 no network after 5 minutes (Mac asleep or offline); skipped\n"
+
+
+@pytest.mark.parametrize("log,expected", [
+    (_FAILED + _OK, "ok"),             # failed 08:00, catch-up succeeded (2026-11-13)
+    (_OK + _FAILED, "fail"),
+    (_SKIP + _OK, "ok"),
+    (_OK + _SKIP, "ok"),               # the last *started* attempt is judged
+    (_SKIP + _FAILED, "fail"),
+    (_FAILED + _SKIP, "fail"),
+    (_SKIP, "fail"),                   # no attempt started at all
+    (_FAILED + _START, "warn"),        # last attempt still running
+])
+def test_run_log_judges_only_the_last_attempt(tmp_path, log, expected):
+    paths = setup_day(tmp_path, log=log)
+    assert health.check_run_log(DAY, paths).status == expected
+
+
+def test_run_log_counts_earlier_attempts(tmp_path):
+    paths = setup_day(tmp_path, log=_FAILED + _FAILED + _OK)
+    check = health.check_run_log(DAY, paths)
+    assert check.status == "ok" and "2 earlier attempt" in check.detail
+
+
+def test_skip_only_log_says_no_network(tmp_path):
+    check = health.check_run_log(DAY, setup_day(tmp_path, log=_SKIP))
+    assert "no network" in check.detail
+
+
+def test_start_marker_inside_claude_output_is_ignored(tmp_path):
+    # Only daily.sh's own "=== ... daily digest start" line starts an attempt.
+    # A substring match on the later mention would cut off the traceback before it.
+    log = (_START + "Traceback (most recent call last)\n"
+           "Retrying the daily digest start\n"
+           "=== Fri Nov 13 08:30:00 CET 2026 daily digest end (exit 0)\n")
+    assert health.check_run_log(DAY, setup_day(tmp_path, log=log)).status == "fail"

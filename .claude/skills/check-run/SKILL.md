@@ -19,6 +19,8 @@ description: Check whether a day's scheduled 08:00 job-digest run actually worke
 | launchd exit 126, "Operation not permitted" | macOS blocked Desktop access | `scripts/install-schedule.sh --check`, then allow JobSearchRunner |
 | launchd: job not loaded | schedule not installed | `scripts/install-schedule.sh --check` |
 | no run log, launchd exit 0 | Mac was off/asleep all morning, or the runner app failed | check `logs/launchd.err.log`; run `launchctl kickstart gui/$(id -u)/com.job-search.daily` |
+| run log: "no attempt started — skipped, no network" | Mac asleep (lid closed) at every start, incl. the 11/14/17 catch-ups | open the lid; `launchctl kickstart gui/$(id -u)/com.job-search.daily` (asks first: sends email, spends credits) |
+| run log: "API Error … ENOTFOUND", exit 1 | the Mac slept mid-run (dark wake) | a later catch-up retries; if none is left, rerun as above |
 | run log: "not logged in" / authentication | Claude Code logged out | log in with `claude` interactively |
 | sources: jobspipe failed (402/401) | JobsPipe credits used up or key invalid | top up credits or fix `JOBSPIPE_API_KEY` in `.env` |
 | sources: all failed | no network at run time | rerun the digest |

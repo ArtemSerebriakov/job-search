@@ -12,7 +12,11 @@ def test_allowed_countries_pass(posting, criteria, loc, country):
     assert location.check(p, criteria).status == "pass"
 
 
-@pytest.mark.parametrize("loc", ["London, United Kingdom", "Warsaw, Poland", "Lisbon", "Remote - US", "Lausanne", "Basel"])
+@pytest.mark.parametrize("loc", [
+    "London, United Kingdom", "Warsaw, Poland", "Lisbon", "Remote - US", "Lausanne", "Basel",
+    # UK cities without a country (Graphcore via Arbeitnow, 2026-11-13 leak)
+    "Bristol", "Cambridge", "Oxford", "Glasgow", "Belfast", "Birmingham", "Leeds", "Cardiff",
+])
 def test_other_countries_fail_for_unnamed_companies(posting, criteria, loc):
     p = posting(company="Some Startup", location=loc, country=None, remote="Remote" in loc)
     assert location.check(p, criteria).status == "fail"
@@ -47,6 +51,12 @@ def test_remote_open_to_germany_passes(posting, criteria):
 
 def test_remote_emea_is_flagged(posting, criteria):
     p = posting(company="X", location="Remote", country=None, remote=True, remote_regions=["EMEA"])
+    assert location.check(p, criteria).status == "flag"
+
+
+@pytest.mark.parametrize("loc", ["Reading", "Bath"])  # UK towns left out: ordinary English words
+def test_ambiguous_uk_town_names_are_flagged_not_failed(posting, criteria, loc):
+    p = posting(company="X", location=loc, country=None)
     assert location.check(p, criteria).status == "flag"
 
 

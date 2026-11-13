@@ -26,6 +26,9 @@ _LOG_ERRORS = re.compile(
     r"traceback \(most recent call last\)|^error:|command not found|daily digest end \(exit [1-9])",
     re.IGNORECASE | re.MULTILINE,
 )
+# Written by scripts/daily.sh at the start of each attempt; anchored so Claude's own output can't match.
+_START_MARKER = re.compile(r"^=== .*daily digest start$", re.MULTILINE)
+_SKIP_MARKER = "no network after 5 minutes"  # daily.sh skipped the attempt without starting Claude
 
 
 @dataclass
@@ -79,13 +82,21 @@ def check_run_log(day: date, paths: Paths) -> Check:
         if launchd_errors:
             detail += f"; launchd: {launchd_errors.splitlines()[-1][:160]}"
         return Check("run log", "fail", detail)
-    text = log.read_text()
+    full = log.read_text()
+    # daily.sh appends every attempt of the day (08:00 + catch-ups) to one log; judge the last one.
+    starts = [m.start() for m in _START_MARKER.finditer(full)]
+    attempts = len(starts)
+    text = full[starts[-1]:] if starts else full
+    if not attempts and _SKIP_MARKER in full:
+        return Check("run log", "fail", f"logs/{log.name}: no attempt started — skipped, no network (Mac asleep?)")
+    earlier = f" ({attempts - 1} earlier attempt(s) today)" if attempts > 1 else ""
     errors = [m.group(0) for m in _LOG_ERRORS.finditer(text)]
     if errors:
-        return Check("run log", "fail", f"errors in logs/{log.name}: {'; '.join(dict.fromkeys(errors))[:200]}")
+        return Check("run log", "fail",
+                     f"errors in logs/{log.name}{earlier}: {'; '.join(dict.fromkeys(errors))[:200]}")
     if "daily digest end (exit 0)" not in text:
         return Check("run log", "warn", f"logs/{log.name} has no clean end marker (still running or killed?)")
-    return Check("run log", "ok", f"logs/{log.name} ended with exit 0")
+    return Check("run log", "ok", f"logs/{log.name} ended with exit 0{earlier}")
 
 
 def check_sources(day: date, paths: Paths) -> Check:

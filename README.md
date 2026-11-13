@@ -70,7 +70,8 @@ uv run jobsearch check-run              # did today's scheduled run work? (exit 
 In Claude Code, `/check-run` runs the same checks and also confirms the email arrived in Gmail.
 If a morning run fails, a macOS notification tells you.
 
-Schedule (08:00 daily; runs on wake if the Mac was asleep):
+Schedule (08:00 daily, catch-up starts at 11:00, 14:00 and 17:00; a missed start runs on wake;
+each catch-up exits at once if today's digest was already sent):
 ```bash
 scripts/install-schedule.sh --check                      # install; approve the macOS Desktop-access prompt
 launchctl print gui/$(id -u)/com.job-search.daily        # status
@@ -113,7 +114,7 @@ src/job_search/
   health.py         check-run: health of a day's scheduled run
   db.py, models.py, config.py
 scripts/            daily.sh (headless run), install-schedule.sh
-launchd/            the 08:00 schedule and the runner app (templates)
+launchd/            the daily schedule and the runner app (templates)
 reports/            daily reports (local, git-ignored: they are the dedup history)
 data/               SQLite DB, daily batches, model cache (git-ignored)
 tests/              pytest suite
@@ -123,12 +124,15 @@ tests/              pytest suite
 **Works**
 - All sources collect live data (486 relevant postings on the first run, 22 sources, no errors).
 - Verification, ranking, scoring validation, report with HTML/plain-text email, calibration, CLI,
-  run health checks (`check-run`) with failure notifications; 268 tests.
+  run health checks (`check-run`) with failure notifications; 289 tests.
 - Hiring-platform feeds for 21 named companies, including Lever (Finom) and Pinpoint (Tabby, inDrive).
 - Browser discovery for named companies' careers sites: EPAM, DataArt, Andersen, Belitsoft, Luxoft
   (Revolut, Qdrant, Wirex excluded: bot checks; Kaspi, Yango, Uzum: no reachable listing).
 - Scheduled 08:00 runs through the runner app work end to end: digests emailed on 2026-10-25, -26,
   -27, -29 and -30 (2026-10-30: 6 postings, no repeated URLs; JobsPipe timed out once).
+- Catch-up starts at 11:00, 14:00 and 17:00 since 2026-11-13: that morning the 08:00 run died
+  because the lid was closed on battery (seconds-long dark wakes, no network); a manual rerun sent
+  the digest. `check-run` judges only the last attempt of the day.
 - Job connectors (Indeed, JobDataLake, Workable) via the `connector-discovery` agent; JobsPipe API
   source (needs `JOBSPIPE_API_KEY` in `.env`).
 - Headless Claude Code can reach the Gmail connector.

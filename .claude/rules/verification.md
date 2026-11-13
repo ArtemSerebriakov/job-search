@@ -19,6 +19,10 @@ a FLAG keeps it and shows a warning in the report.
 | llm_crosscheck | `scoring.cross_check` (in `finalize`) | model-extracted fact violates a criterion (years > 2, enrollment, German B2+ without English working language) AND its quote is found verbatim in the posting | same claim but quote not found in the posting |
 | liveness | `liveness.py` | HTTP 404/410, closed-phrase on page, redirect to a listing page | 401/403/429/5xx/network error; live only on an aggregator |
 
+Location: places outside DE/NL/AE are a FAIL only when listed in `_FOREIGN` (countries and major
+cities); anything unrecognised only FLAGs. UK cities were added after the Graphcore/Bristol leak
+(2026-11-13); ambiguous words ("Reading", "Bath") are left out on purpose.
+
 Sentence splitting (`verify/text.py`) first removes abbreviation periods (e.g., i.e., z.B., ca., etc.)
 so "Experience with LLMs (e.g. GPT-4) for 3+ years" stays one sentence (leak fixed 2026-10-30).
 
