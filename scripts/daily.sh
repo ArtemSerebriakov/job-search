@@ -1,5 +1,6 @@
 #!/bin/bash
-# Daily headless run, started by launchd at 08:00 with catch-ups at 11/14/17 (launchd/com.job-search.daily.plist).
+# Daily headless run. launchd starts it every 30 minutes; it only runs between 08:00 and 22:00,
+# with the lid open or on power, until today's digest is sent (launchd/com.job-search.daily.plist).
 # launchd starts with an almost empty environment, so PATH is set explicitly.
 set -euo pipefail
 
@@ -18,12 +19,36 @@ LOG="logs/$DAY.log"
 BATCH="data/batches/$DAY"
 REPORT="reports/job-search_daily-reports_$DAY.md"
 
-# Catch-up runs: launchd starts this at 08:00, 11:00, 14:00 and 17:00 (on the next wake if asleep).
-# With the lid closed on battery macOS keeps the Mac asleep apart from a few seconds of dark wake, so
-# the 08:00 run can die mid-way (2026-11-13). Later starts exit here once the day is done.
-LAST_ATTEMPT_HOUR=17  # keep in sync with StartCalendarInterval in launchd/com.job-search.daily.plist.template
-is_last_attempt() { [ "$(date +%H)" -ge "$LAST_ATTEMPT_HOUR" ]; }
+# Starts every 30 minutes (launchd StartInterval; a start missed while asleep runs on the next wake).
+# With the lid closed on battery macOS only dark-wakes for seconds, so a run started then dies offline
+# (2026-11-13, 2026-11-14). Those starts are skipped; the first start after the lid opens does the run.
+FIRST_HOUR=8      # no runs before 08:00 ...
+LAST_HOUR=22      # ... or from 22:00
+MAX_ATTEMPTS=3    # real attempts (Claude started) per day, so a failing run can't burn credits all day
+hour=$((10#$(date +%H)))
 
+# Log a skip and exit. Silent unless it's the last hour of the window and no digest went out today.
+skip() {
+  local last
+  last="$(tail -n 1 "$LOG" 2>/dev/null || true)"
+  [[ "$last" == *"$1; skipped" ]] || echo "=== $(date) $1; skipped" >> "$LOG"  # no repeated lines
+  if [ "$hour" -ge $((LAST_HOUR - 1)) ] && [ ! -f "$BATCH/.no-digest-notified" ]; then
+    notify "No job digest today ($1). Run /check-run or rerun by hand."
+    mkdir -p "$BATCH" && touch "$BATCH/.no-digest-notified"
+  fi
+  exit 0
+}
+
+lid_closed_on_battery() {
+  local lid power
+  lid="$(/usr/sbin/ioreg -r -k AppleClamshellState -d 4 2>/dev/null || true)"
+  power="$(/usr/bin/pmset -g batt 2>/dev/null || true)"
+  [[ "$lid" == *'"AppleClamshellState" = Yes'* && "$power" == *"'Battery Power'"* ]]
+}
+
+if [ "$hour" -lt "$FIRST_HOUR" ] || [ "$hour" -ge "$LAST_HOUR" ]; then
+  exit 0  # outside the daily window
+fi
 if [ -f "$BATCH/email_sent.json" ]; then
   exit 0  # today's digest was already sent
 fi
@@ -37,6 +62,14 @@ if [ -f "$REPORT" ]; then
   fi
   exit 0
 fi
+attempts="$(grep -c -E '^=== .*daily digest start$' "$LOG" 2>/dev/null || true)"
+attempts="${attempts:-0}"
+if [ "$attempts" -ge "$MAX_ATTEMPTS" ]; then
+  skip "attempt limit ($MAX_ATTEMPTS) reached"
+fi
+if lid_closed_on_battery; then
+  skip "lid closed on battery (dark wake)"
+fi
 
 # Headless Claude stops background agents 10 minutes after its last turn by default; discovery
 # takes longer (2026-10-25 run was cut off). Allow 45 minutes, not forever, so a hung agent ends.
@@ -44,7 +77,7 @@ export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2700000
 
 # After wake the network (and with it the claude.ai connectors) can take a while to come up
 # (2026-10-25 08:01: sources and connectors failed). Wait up to 5 minutes for it; if it never comes
-# up, skip without starting Claude and leave it to the next catch-up run.
+# up, skip without starting Claude and leave it to the next start.
 online=false
 deadline=$((SECONDS + 300))
 while :; do  # always one more try after waking: SECONDS is wall-clock and keeps counting in sleep
@@ -53,15 +86,11 @@ while :; do  # always one more try after waking: SECONDS is wall-clock and keeps
   /bin/sleep 10
 done
 if ! $online; then
-  echo "=== $(date) no network after 5 minutes (Mac asleep or offline); skipped" >> "$LOG"
-  if is_last_attempt; then
-    notify "No internet for today's last attempt; nothing was sent. Rerun by hand when online."
-  fi
-  exit 0
+  skip "no network after 5 minutes (Mac asleep or offline)"
 fi
 if [ "$(date +%F)" != "$DAY" ]; then
   echo "=== $(date) the Mac slept through midnight during the network wait; skipped" >> "$LOG"
-  exit 0  # that day's catch-ups are over
+  exit 0  # that day is over
 fi
 
 ALLOWED_TOOLS=(
@@ -94,7 +123,7 @@ status=0
 {
   echo "=== $(date) daily digest start"
   # caffeinate: no idle sleep during the run (and no system sleep on AC power). It cannot stop
-  # the forced sleep of a closed lid on battery; the catch-up runs cover that.
+  # the forced sleep of a closed lid on battery; the lid check and the next 30-min start cover that.
   /usr/bin/caffeinate -is claude -p "/daily-digest" --model sonnet --mcp-config config/browser-mcp.json \
     --allowedTools "${ALLOWED_TOOLS[@]}" || status=$?
   echo "=== $(date) daily digest end (exit $status)"
@@ -103,10 +132,10 @@ status=0
 } >> "$LOG" 2>&1
 
 if [ "$status" -ne 0 ]; then
-  if is_last_attempt; then
+  if [ $((attempts + 1)) -ge "$MAX_ATTEMPTS" ] || [ "$((10#$(date +%H)))" -ge $((LAST_HOUR - 1)) ]; then
     notify "Today's last run failed (exit $status); nothing was sent. See $LOG"
   else
-    notify "The run failed (exit $status); it retries at the next catch-up time. See $LOG"
+    notify "The run failed (exit $status); it retries within 30 minutes. See $LOG"
   fi
 elif [ "${check_status:-0}" -ne 0 ]; then
   notify "The run finished with problems. Run /check-run or see $LOG"

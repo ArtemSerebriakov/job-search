@@ -28,7 +28,8 @@ _LOG_ERRORS = re.compile(
 )
 # Written by scripts/daily.sh at the start of each attempt; anchored so Claude's own output can't match.
 _START_MARKER = re.compile(r"^=== .*daily digest start$", re.MULTILINE)
-_SKIP_MARKER = "no network after 5 minutes"  # daily.sh skipped the attempt without starting Claude
+# daily.sh skipped a start without launching Claude: "=== <date> <reason>; skipped"
+_SKIP_LINE = re.compile(r"^=== \S+ \S+ +\S+ \S+ \S+ \S+ (.*); skipped$", re.MULTILINE)
 
 
 @dataclass
@@ -83,12 +84,13 @@ def check_run_log(day: date, paths: Paths) -> Check:
             detail += f"; launchd: {launchd_errors.splitlines()[-1][:160]}"
         return Check("run log", "fail", detail)
     full = log.read_text()
-    # daily.sh appends every attempt of the day (08:00 + catch-ups) to one log; judge the last one.
+    # daily.sh appends every attempt of the day (30-min starts) to one log; judge the last one.
     starts = [m.start() for m in _START_MARKER.finditer(full)]
     attempts = len(starts)
     text = full[starts[-1]:] if starts else full
-    if not attempts and _SKIP_MARKER in full:
-        return Check("run log", "fail", f"logs/{log.name}: no attempt started — skipped, no network (Mac asleep?)")
+    skips = _SKIP_LINE.findall(full)
+    if not attempts and skips:
+        return Check("run log", "fail", f"logs/{log.name}: no attempt started — last skip: {skips[-1]}")
     earlier = f" ({attempts - 1} earlier attempt(s) today)" if attempts > 1 else ""
     errors = [m.group(0) for m in _LOG_ERRORS.finditer(text)]
     if errors:

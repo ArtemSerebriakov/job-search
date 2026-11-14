@@ -70,8 +70,8 @@ uv run jobsearch check-run              # did today's scheduled run work? (exit 
 In Claude Code, `/check-run` runs the same checks and also confirms the email arrived in Gmail.
 If a morning run fails, a macOS notification tells you.
 
-Schedule (08:00 daily, catch-up starts at 11:00, 14:00 and 17:00; a missed start runs on wake;
-each catch-up exits at once if today's digest was already sent):
+Schedule (a start every 30 minutes; the run happens at the first start after 08:00 with the lid
+open or on power, at most 3 attempts a day, never after 22:00 or once the digest is sent):
 ```bash
 scripts/install-schedule.sh --check                      # install; approve the macOS Desktop-access prompt
 launchctl print gui/$(id -u)/com.job-search.daily        # status
@@ -124,15 +124,16 @@ tests/              pytest suite
 **Works**
 - All sources collect live data (486 relevant postings on the first run, 22 sources, no errors).
 - Verification, ranking, scoring validation, report with HTML/plain-text email, calibration, CLI,
-  run health checks (`check-run`) with failure notifications; 289 tests.
+  run health checks (`check-run`) with failure notifications; 292 tests.
 - Hiring-platform feeds for 21 named companies, including Lever (Finom) and Pinpoint (Tabby, inDrive).
 - Browser discovery for named companies' careers sites: EPAM, DataArt, Andersen, Belitsoft, Luxoft
   (Revolut, Qdrant, Wirex excluded: bot checks; Kaspi, Yango, Uzum: no reachable listing).
 - Scheduled 08:00 runs through the runner app work end to end: digests emailed on 2026-10-25, -26,
   -27, -29 and -30 (2026-10-30: 6 postings, no repeated URLs; JobsPipe timed out once).
-- Catch-up starts at 11:00, 14:00 and 17:00 since 2026-11-13: that morning the 08:00 run died
-  because the lid was closed on battery (seconds-long dark wakes, no network); a manual rerun sent
-  the digest. `check-run` judges only the last attempt of the day.
+- Lid-aware schedule since 2026-11-14: runs started in seconds-long dark wakes (lid closed on
+  battery) died offline on 2026-11-13 and -14, also at fixed catch-up times. Now launchd starts
+  every 30 min and `daily.sh` skips while the lid is closed on battery. `check-run` judges only the
+  last attempt of the day.
 - Job connectors (Indeed, JobDataLake, Workable) via the `connector-discovery` agent; JobsPipe API
   source (needs `JOBSPIPE_API_KEY` in `.env`).
 - Headless Claude Code can reach the Gmail connector.

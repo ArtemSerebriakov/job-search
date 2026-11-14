@@ -149,3 +149,17 @@ def test_start_marker_inside_claude_output_is_ignored(tmp_path):
            "Retrying the daily digest start\n"
            "=== Fri Nov 13 08:30:00 CET 2026 daily digest end (exit 0)\n")
     assert health.check_run_log(DAY, setup_day(tmp_path, log=log)).status == "fail"
+
+
+@pytest.mark.parametrize("reason", [
+    "lid closed on battery (dark wake)",
+    "attempt limit (3) reached",
+    "no network after 5 minutes (Mac asleep or offline)",
+])
+def test_skip_only_log_names_the_last_skip_reason(tmp_path, reason):
+    # daily.sh writes "=== <date> <reason>; skipped" when it skips a start without launching Claude.
+    log = ("=== Sat Nov 14 08:25:02 CET 2026 lid closed on battery (dark wake); skipped\n"
+           f"=== Sat Nov  1 09:00:00 CET 2026 {reason}; skipped\n")
+    check = health.check_run_log(DAY, setup_day(tmp_path, log=log))
+    assert check.status == "fail"
+    assert check.detail.endswith(f"last skip: {reason}")

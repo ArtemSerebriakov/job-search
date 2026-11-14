@@ -13,36 +13,11 @@
     <string>-a</string>
     <string>__RUNNER_APP__</string>
   </array>
-  <!-- Every day at 08:00, with catch-up starts at 11:00, 14:00 and 17:00 (scripts/daily.sh exits at
-       once if today's digest was already sent; its LAST_ATTEMPT_HOUR must match the last entry).
-       If the Mac is asleep, launchd runs a missed start on wake. -->
-  <key>StartCalendarInterval</key>
-  <array>
-    <dict>
-      <key>Hour</key>
-      <integer>8</integer>
-      <key>Minute</key>
-      <integer>0</integer>
-    </dict>
-    <dict>
-      <key>Hour</key>
-      <integer>11</integer>
-      <key>Minute</key>
-      <integer>0</integer>
-    </dict>
-    <dict>
-      <key>Hour</key>
-      <integer>14</integer>
-      <key>Minute</key>
-      <integer>0</integer>
-    </dict>
-    <dict>
-      <key>Hour</key>
-      <integer>17</integer>
-      <key>Minute</key>
-      <integer>0</integer>
-    </dict>
-  </array>
+  <!-- Every 30 minutes; a start missed while the Mac sleeps runs on the next wake. scripts/daily.sh
+       decides whether to run: only 08:00-22:00, not with the lid closed on battery (dark wake), at most
+       3 real attempts a day, and not again once today's digest was sent. -->
+  <key>StartInterval</key>
+  <integer>1800</integer>
   <key>StandardOutPath</key>
   <string>__PROJECT_DIR__/logs/launchd.out.log</string>
   <key>StandardErrorPath</key>

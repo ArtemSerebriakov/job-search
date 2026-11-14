@@ -30,12 +30,13 @@ All commands accept `--date YYYY-MM-DD` (default: today).
 - `scripts/daily.sh` runs `claude -p "/daily-digest" --model sonnet --mcp-config config/browser-mcp.json`
   (adds the headless `careers-browser` Playwright server, pinned @playwright/mcp@0.0.83) with an
   explicit `--allowedTools` list and PATH; logs to `logs/<date>.log`.
-- Catch-up runs: launchd starts at 08:00, 11:00, 14:00 and 17:00 (a missed start runs on wake). With
-  the lid closed on battery macOS only dark-wakes for seconds, so the 08:00 run died offline
-  (2026-11-13). `daily.sh` exits at once if `email_sent.json` exists; if a report exists without it,
-  it notifies once and does not rerun (credits, dedup); if the network is down after 5 min it skips
-  without starting Claude; notifications only on a failed run or the last attempt
-  (`LAST_ATTEMPT_HOUR=17`, must match the plist). Claude runs under `caffeinate -is`.
+- Starts: launchd starts every 30 min (`StartInterval` 1800; a start missed in sleep runs on wake).
+  `daily.sh` decides: only 08:00–22:00; exits at once if `email_sent.json` exists; if a report exists
+  without it, notifies once and does not rerun (credits, dedup); skips with the lid closed on battery
+  (dark wakes last seconds — the 2026-11-13 and -14 runs died offline that way); at most 3 real
+  attempts a day (`MAX_ATTEMPTS`); skips if the network is down after 5 min. Skips are logged as
+  `=== <date> <reason>; skipped`; notifications only on a failed run, or once in the last hour (21:xx)
+  if nothing was sent. Claude runs under `caffeinate -is`.
 - Each start: launchd runs `open -W -g -a ~/Applications/JobSearchRunner.app`; the
   app runs `scripts/daily.sh`. Why an app: macOS blocks bare launchd jobs from reading ~/Desktop
   ("Operation not permitted", exit 126 — the 2026-10-24 run failed this way). The Desktop permission

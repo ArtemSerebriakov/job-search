@@ -19,8 +19,9 @@ description: Check whether a day's scheduled 08:00 job-digest run actually worke
 | launchd exit 126, "Operation not permitted" | macOS blocked Desktop access | `scripts/install-schedule.sh --check`, then allow JobSearchRunner |
 | launchd: job not loaded | schedule not installed | `scripts/install-schedule.sh --check` |
 | no run log, launchd exit 0 | Mac was off/asleep all morning, or the runner app failed | check `logs/launchd.err.log`; run `launchctl kickstart gui/$(id -u)/com.job-search.daily` |
-| run log: "no attempt started — skipped, no network" | Mac asleep (lid closed) at every start, incl. the 11/14/17 catch-ups | open the lid; `launchctl kickstart gui/$(id -u)/com.job-search.daily` (asks first: sends email, spends credits) |
-| run log: "API Error … ENOTFOUND", exit 1 | the Mac slept mid-run (dark wake) | a later catch-up retries; if none is left, rerun as above |
+| run log: "no attempt started — last skip: lid closed on battery" / "no network" | lid closed (or offline) at every start 08:00–22:00 | open the lid: the next 30-min start runs it; or `launchctl kickstart gui/$(id -u)/com.job-search.daily` (asks first: sends email, spends credits) |
+| run log: "API Error … ENOTFOUND", exit 1 | the lid was closed mid-run | the next 30-min start with the lid open retries (max 3 attempts a day) |
+| run log: "attempt limit (3) reached; skipped" | three runs failed today | read the failed attempts in the log, fix, then kickstart by hand |
 | run log: "not logged in" / authentication | Claude Code logged out | log in with `claude` interactively |
 | sources: jobspipe failed (402/401) | JobsPipe credits used up or key invalid | top up credits or fix `JOBSPIPE_API_KEY` in `.env` |
 | sources: all failed | no network at run time | rerun the digest |
